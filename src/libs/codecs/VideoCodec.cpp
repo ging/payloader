@@ -36,7 +36,8 @@ namespace erizo {
   }
 
   int VideoEncoder::initEncoder(const VideoCodecInfo& info){
-    vCoder = avcodec_find_encoder(VideoCodecID2ffmpegDecoderID(info.codec));
+    ELOG_DEBUG("Trying to open encoder for %d", info.codec);
+    vCoder = avcodec_find_encoder((AVCodecID)info.codec);
     if (!vCoder) {
       ELOG_DEBUG("Video codec not found for encoder");
       return -1;
@@ -100,6 +101,10 @@ namespace erizo {
     cPicture->linesize[1] = vCoderContext->width / 2;
     cPicture->linesize[2] = vCoderContext->width / 2;
 
+    cPicture->format = AV_PIX_FMT_YUV420P;
+    cPicture->width = vCoderContext->width;
+    cPicture->height = vCoderContext->height;
+
     AVPacket pkt;
     av_init_packet(&pkt);
     pkt.data = outBuffer;
@@ -107,12 +112,11 @@ namespace erizo {
 
     int ret = 0;
     int got_packet = 0;
-    //    ELOG_DEBUG(
-    //        "Before encoding inBufflen %d, size %d, codecontext width %d pkt->size%d",
-    //        inLength, size, vCoderContext->width, pkt.size);
+    ELOG_DEBUG("Before encoding inBufflen %d, size %d, codecontext width %d pkt->size %d",
+           inLength, size, vCoderContext->width, pkt.size);
     ret = avcodec_encode_video2(vCoderContext, &pkt, cPicture, &got_packet);
-    //    ELOG_DEBUG("Encoded video size %u, ret %d, got_packet %d, pts %lld, dts %lld",
-    //        pkt.size, ret, got_packet, pkt.pts, pkt.dts);
+    ELOG_DEBUG("Encoded video size %u, ret %d, got_packet %d, pts %lld, dts %lld",
+           pkt.size, ret, got_packet, pkt.pts, pkt.dts);
     if (!ret && got_packet && vCoderContext->coded_frame) {
       vCoderContext->coded_frame->pts = pkt.pts;
       vCoderContext->coded_frame->key_frame =
@@ -145,7 +149,7 @@ namespace erizo {
 
   int VideoDecoder::initDecoder (const VideoCodecInfo& info){
     ELOG_DEBUG("Init Decoder");
-    vDecoder = avcodec_find_decoder(VideoCodecID2ffmpegDecoderID(info.codec));
+    vDecoder = avcodec_find_decoder((AVCodecID)info.codec);
     if (!vDecoder) {
       ELOG_DEBUG("Error getting video decoder");
       return -1;
@@ -170,7 +174,7 @@ namespace erizo {
       ELOG_DEBUG("Error allocating video frame");
       return -1;
     }
-
+    ELOG_DEBUG("Init Decoder OK");
     return 0;
   }
 

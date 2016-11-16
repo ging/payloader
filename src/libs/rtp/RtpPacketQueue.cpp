@@ -27,6 +27,8 @@ void RtpPacketQueue::pushPacket(const char *data, int length)
     const RtpHeader *currentHeader = reinterpret_cast<const RtpHeader*>(data);
     uint16_t currentSequenceNumber = currentHeader->getSeqNumber();
 
+    ELOG_DEBUG("VOY %d", currentSequenceNumber);
+
     if(lastSequenceNumberGiven_ >= 0 && (rtpSequenceLessThan(currentSequenceNumber, (uint16_t)lastSequenceNumberGiven_) || currentSequenceNumber == lastSequenceNumberGiven_)) {
         // this sequence number is less than the stuff we've already handed out, which means it's too late to be of any value.
         ELOG_WARN("SSRC:%u, Payload: %u, discarding very late sample %d that is <= %d",currentHeader->getSSRC(),currentHeader->getPayloadType(), currentSequenceNumber, lastSequenceNumberGiven_);

@@ -18,6 +18,12 @@ ExternalOutput::ExternalOutput(const std::string& outputUrl) : audioQueue_(5.0, 
 
     videoQueue_.setTimebase(90000); // our video timebase is easy: always 90 khz.  We'll set audio once we receive a packet and can inspect its header.
 
+    picture = av_frame_alloc();
+    if (!picture) {
+      ELOG_DEBUG("Error allocating video frame");
+    }
+
+    frame_count = 0;
 
     context_ = avformat_alloc_context();
     if (context_==NULL){
@@ -30,8 +36,8 @@ ExternalOutput::ExternalOutput(const std::string& outputUrl) : audioQueue_(5.0, 
         if (!context_->oformat){
             ELOG_ERROR("Error guessing format %s", context_->filename);
         } else {
-            context_->oformat->video_codec = AV_CODEC_ID_MPEG4;
-            context_->oformat->audio_codec = AV_CODEC_ID_MP3; // We'll figure this out once we start receiving data; it's either PCM or OPUS
+            // context_->oformat->video_codec = AV_CODEC_ID_MPEG4;
+            // context_->oformat->audio_codec = AV_CODEC_ID_MP3; // We'll figure this out once we start receiving data; it's either PCM or OPUS
         }
 
         context_->nb_streams = 1;
@@ -46,8 +52,8 @@ bool ExternalOutput::init(){
     MediaInfo m;
     m.hasVideo = false;
     m.hasAudio = false;
-    thread_ = boost::thread(&ExternalOutput::sendLoop, this);
     recording_ = true;
+    thread_ = boost::thread(&ExternalOutput::sendLoop, this);
     ELOG_DEBUG("Initialized successfully");
     return true;
 }
@@ -84,11 +90,11 @@ ExternalOutput::~ExternalOutput(){
 }
 
 void ExternalOutput::receiveRawData(RawDataPacket& packet){
-	ELOG_DEBUG("RECEIVE RAW");
+	ELOG_DEBUG("RECEIVE RAW %d", packet.type);
 	if (packet.type == VIDEO) {
 		this->queueData((char*)packet.data, packet.length, VIDEO_PACKET);
 	}
-    return;
+  return;
 }
 
 void ExternalOutput::receiveRtpData(char* buf, int len) {
@@ -108,24 +114,36 @@ void ExternalOutput::writeRawData(char* buf, int len, int streamIndex){
 	initContext();
 
 	AVPacket avpkt;
-    av_init_packet(&avpkt);
+  av_init_packet(&avpkt);
 
+  if (streamIndex == 1) {
+  	RtpHeader* head = reinterpret_cast<RtpHeader*>(buf);
+    ELOG_DEBUG("WRITE DATA PTTTTTT %d", head->getTimestamp());
 
-    if (streamIndex == 1) {
-    	RtpHeader* head = reinterpret_cast<RtpHeader*>(buf);
-		ELOG_DEBUG("WRITE DATA PTTTTTT %d", head->getTimestamp());
+  	avpkt.data = (uint8_t*) buf + 14;
+  	avpkt.size = len - 14;
+  } else {
 
-    	avpkt.data = (uint8_t*) buf + 14;
-    	avpkt.size = len - 14;
-    } else {
-    	avpkt.data = (unsigned char*)buf;
-    	avpkt.size = len;
-    }
+    picture->pts = AV_NOPTS_VALUE;
+    picture->data[0] = (unsigned char*)buf;
+    picture->data[1] = (unsigned char*)buf + len;
+    picture->data[2] = (unsigned char*)buf + len + len / 4;
+    picture->linesize[0] = 704;
+    picture->linesize[1] = 704 / 2;
+    picture->linesize[2] = 704 / 2;
 
-    avpkt.stream_index = streamIndex;
-    avpkt.pts = 0;
-    av_interleaved_write_frame(context_, &avpkt);
+    picture->format = AV_PIX_FMT_YUV420P;
+    picture->width = 704;
+    picture->height = 396;
 
+  	avpkt.data= (uint8_t *)picture;
+  	avpkt.size = len;
+  }
+
+  avpkt.stream_index = streamIndex;
+  avpkt.pts = 0;
+  av_interleaved_write_frame(context_, &avpkt);
+  frame_count++;
 }
 
 void ExternalOutput::writeAudioData(char* buf, int len){
@@ -349,8 +367,8 @@ bool ExternalOutput::initContext() {
         video_stream_ = avformat_new_stream (context_, videoCodec);
         video_stream_->id = 0;
         video_stream_->codec->codec_id = context_->oformat->video_codec;
-        video_stream_->codec->width = 640;
-        video_stream_->codec->height = 480;
+        video_stream_->codec->width = 704;
+        video_stream_->codec->height = 396;
         video_stream_->time_base = (AVRational){1,30};   // A decent guess here suffices; if processing the file with ffmpeg,
                                                          // use -vsync 0 to force it not to duplicate frames.
         video_stream_->codec->pix_fmt = AV_PIX_FMT_YUV420P;
@@ -359,26 +377,26 @@ bool ExternalOutput::initContext() {
         }
         context_->oformat->flags |= AVFMT_VARIABLE_FPS;
 
-        AVCodec* audioCodec = avcodec_find_encoder(context_->oformat->audio_codec);
-        if (audioCodec==NULL){
-            ELOG_ERROR("Could not find audio codec");
-            return false;
-        }
-
-        audio_stream_ = avformat_new_stream (context_, audioCodec);
-        audio_stream_->id = 1;
-        audio_stream_->codec->codec_id = context_->oformat->audio_codec;
-        // audio_stream_->codec->sample_rate = context_->oformat->audio_codec == AV_CODEC_ID_PCM_MULAW ? 8000 : 48000; // TODO is it always 48 khz for opus?
-        audio_stream_->codec->sample_rate = 48000;
-        audio_stream_->time_base = (AVRational) { 1, audio_stream_->codec->sample_rate };
-        // audio_stream_->codec->channels = context_->oformat->audio_codec == AV_CODEC_ID_PCM_MULAW ? 1 : 2;   // TODO is it always two channels for opus?
-        audio_stream_->codec->channels = 1;   // TODO is it always two channels for opus?
-        if (context_->oformat->flags & AVFMT_GLOBALHEADER){
-            audio_stream_->codec->flags|=CODEC_FLAG_GLOBAL_HEADER;
-        }
+        // AVCodec* audioCodec = avcodec_find_encoder(context_->oformat->audio_codec);
+        // if (audioCodec==NULL){
+        //     ELOG_ERROR("Could not find audio codec");
+        //     return false;
+        // }
+        //
+        // audio_stream_ = avformat_new_stream (context_, audioCodec);
+        // audio_stream_->id = 1;
+        // audio_stream_->codec->codec_id = context_->oformat->audio_codec;
+        // // audio_stream_->codec->sample_rate = context_->oformat->audio_codec == AV_CODEC_ID_PCM_MULAW ? 8000 : 48000; // TODO is it always 48 khz for opus?
+        // audio_stream_->codec->sample_rate = 48000;
+        // audio_stream_->time_base = (AVRational) { 1, audio_stream_->codec->sample_rate };
+        // // audio_stream_->codec->channels = context_->oformat->audio_codec == AV_CODEC_ID_PCM_MULAW ? 1 : 2;   // TODO is it always two channels for opus?
+        // audio_stream_->codec->channels = 1;   // TODO is it always two channels for opus?
+        // if (context_->oformat->flags & AVFMT_GLOBALHEADER){
+        //     audio_stream_->codec->flags|=CODEC_FLAG_GLOBAL_HEADER;
+        // }
 
         context_->streams[0] = video_stream_;
-        context_->streams[1] = audio_stream_;
+        // context_->streams[1] = audio_stream_;
         if (avio_open(&context_->pb, context_->filename, AVIO_FLAG_WRITE) < 0){
             ELOG_ERROR("Error opening output file");
             return false;
@@ -416,6 +434,7 @@ void ExternalOutput::queueData(char* buffer, int length, packetType type){
     //     this->sendFirPacket();
     //     needToSendFir_ = false;
     // }
+    ELOG_DEBUG("Queue data %d", type);
     if (type == VIDEO_PACKET){
         if(this->videoOffsetMsec_ == -1) {
             timeval time;
@@ -440,11 +459,11 @@ void ExternalOutput::queueData(char* buffer, int length, packetType type){
         //         fec_receiver_.ProcessReceivedFec();
         //     }
         // } else {
-        	ELOG_DEBUG("WRITE VIDEO");
+        	ELOG_DEBUG("WRITE VIDEO %d", length);
         	this->writeRawData(buffer, length, 0);
-         	// videoQueue_.pushPacket((const char*)buffer, length);
+          // videoQueue_.pushPacket(buffer, length);
         // }
-    }else{
+    } else {
         if(this->audioOffsetMsec_ == -1) {
             timeval time;
             gettimeofday(&time, NULL);
@@ -464,7 +483,7 @@ void ExternalOutput::queueData(char* buffer, int length, packetType type){
        	// this->writeRawData(buffer, length, 1);
         // audioQueue_.pushPacket(buffer, length);
     }
-
+    ELOG_DEBUG("Check queue");
     if( audioQueue_.hasData() || videoQueue_.hasData()) {
         // One or both of our queues has enough data to write stuff out.  Notify our writer.
         cond_.notify_one();
@@ -473,32 +492,32 @@ void ExternalOutput::queueData(char* buffer, int length, packetType type){
 
 void ExternalOutput::sendLoop() {
 	ELOG_DEBUG("LOOP");
-	while (recording_) {
-		ELOG_DEBUG("LOOP WHILE");
-	    boost::unique_lock<boost::mutex> lock(mtx_);
-	    cond_.wait(lock);
-	    while (audioQueue_.hasData()) {
-	      boost::shared_ptr<dataPacket> audioP = audioQueue_.popPacket();
-	      this->writeAudioData(audioP->data, audioP->length);
-	    }
-	    while (videoQueue_.hasData()) {
-	      ELOG_DEBUG("LOOP video has data");
-	      boost::shared_ptr<dataPacket> videoP = videoQueue_.popPacket();
-	      this->writeVideoData(videoP->data, videoP->length);
-	    }
-	    if (!inited_ && firstDataReceived_!=-1){
-	      inited_ = true;
-	    }
-	  }
-
-	  // Since we're bailing, let's completely drain our queues of all data.
-	  while (audioQueue_.getSize() > 0) {
-	    boost::shared_ptr<dataPacket> audioP = audioQueue_.popPacket(true); // ignore our minimum depth check
-	    this->writeAudioData(audioP->data, audioP->length);
-	  }
-	  while (videoQueue_.getSize() > 0) {
-	    boost::shared_ptr<dataPacket> videoP = videoQueue_.popPacket(true); // ignore our minimum depth check
-	    this->writeVideoData(videoP->data, videoP->length);
-	  }
-	}
+	// while (recording_) {
+	//   ELOG_DEBUG("LOOP WHILE");
+  //   boost::unique_lock<boost::mutex> lock(mtx_);
+  //   cond_.wait(lock);
+  //   while (audioQueue_.hasData()) {
+  //     boost::shared_ptr<dataPacket> audioP = audioQueue_.popPacket();
+  //     this->writeAudioData(audioP->data, audioP->length);
+  //   }
+  //   while (videoQueue_.hasData()) {
+  //     ELOG_DEBUG("LOOP video has data");
+  //     boost::shared_ptr<dataPacket> videoP = videoQueue_.popPacket();
+  //     this->writeVideoData(videoP->data, videoP->length);
+  //   }
+  //   if (!inited_ && firstDataReceived_!=-1){
+  //     inited_ = true;
+  //   }
+  // }
+  //
+	//   // Since we're bailing, let's completely drain our queues of all data.
+  // while (audioQueue_.getSize() > 0) {
+  //   boost::shared_ptr<dataPacket> audioP = audioQueue_.popPacket(true); // ignore our minimum depth check
+  //   this->writeAudioData(audioP->data, audioP->length);
+  // }
+  // while (videoQueue_.getSize() > 0) {
+  //   boost::shared_ptr<dataPacket> videoP = videoQueue_.popPacket(true); // ignore our minimum depth check
+  //   this->writeVideoData(videoP->data, videoP->length);
+  // }
+}
 }

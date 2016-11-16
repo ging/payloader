@@ -11,7 +11,7 @@
 #include "libs/ExternalOutput.h"
 
 int main(int argc, const char* argv[]) {
-  const char *url = "file:/home/alvaro/Documentos/arqueopterix/payloader_test/extras/video_out.avi";
+  const char *url = "file:/home/alvaro/Documentos/arqueopterix/payloader_test/extras/video_out.mp4";
   // const char *url = "file:/home/alvaro/Documentos/arqueopterix/payloader_test/extras/video_out.flv";
 
   erizo::InputProcessor* ip = new erizo::InputProcessor();
@@ -19,7 +19,9 @@ int main(int argc, const char* argv[]) {
   eo->init();
   erizo::MediaInfo om;
   om.hasVideo = true;
-  om.hasAudio = true;
+  // om.hasAudio = true;
+  om.videoCodec.height = 704;
+  om.videoCodec.width = 396;
   ip->init(om, eo);
 
   erizo::RtpSource* rtp = new erizo::RtpSource(3011, ip);

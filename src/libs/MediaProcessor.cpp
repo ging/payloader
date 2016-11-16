@@ -41,12 +41,12 @@ namespace erizo {
     this->mediaInfo = info;
     this->rawReceiver_ = receiver;
     if (mediaInfo.hasVideo) {
-      mediaInfo.videoCodec.codec = VIDEO_CODEC_VP8;
+      mediaInfo.videoCodec.codec = (erizo::VideoCodecID)71691;
       decodedBuffer_ = (unsigned char*) malloc(
           info.videoCodec.width * info.videoCodec.height * 3 / 2);
       unpackagedBufferPtr_ = unpackagedBuffer_ = (unsigned char*) malloc(UNPACKAGED_BUFFER_SIZE);
       if(!vDecoder.initDecoder(mediaInfo.videoCodec));
-      videoDecoder = 1; 
+      videoDecoder = 1;
       if(!this->initVideoUnpackager());
     }
     if (mediaInfo.hasAudio) {
@@ -70,7 +70,7 @@ namespace erizo {
     } else {
       rawReceiver_->receiveRtpData(buf, len);
     }
-    return 0; 
+    return 0;
   }
 
   int InputProcessor::deliverAudioData_(char* buf, int len) {
@@ -106,38 +106,29 @@ namespace erizo {
       unpackagedBufferPtr_ += ret;
       if (gotUnpackagedFrame_) {
         unpackagedBufferPtr_ -= upackagedSize_;
-        ELOG_DEBUG("Tengo un frame desempaquetado!! Size = %d", upackagedSize_);
-        // int c;
-        // int gotDecodedFrame = 0;
+        ELOG_DEBUG("Tengo un frame desempaquetado!! Size = %d, voy a decodificar", upackagedSize_);
+        int c = 0;
+        int gotDecodedFrame = 0;
 
-        // c = vDecoder.decodeVideo(unpackagedBufferPtr_, upackagedSize_,
-        //                          decodedBuffer_,
-        //                          mediaInfo.videoCodec.width * mediaInfo.videoCodec.height * 3 / 2,
-        //                          &gotDecodedFrame);
+        c = vDecoder.decodeVideo(unpackagedBufferPtr_, upackagedSize_,
+                                 decodedBuffer_,
+                                 mediaInfo.videoCodec.width * mediaInfo.videoCodec.height * 3 / 2,
+                                 &gotDecodedFrame);
 
-        // upackagedSize_ = 0;
-        // gotUnpackagedFrame_ = 0;
-        // ELOG_DEBUG("Bytes dec = %d", c);
-        // if (gotDecodedFrame && c > 0) {
-        //   ELOG_DEBUG("Tengo un frame decodificado!!");
-        //   gotDecodedFrame = 0;
-        //   RawDataPacket p;
-        //   p.data = decodedBuffer_;
-        //   p.length = c;
-        //   p.type = VIDEO;
-        //   rawReceiver_->receiveRawData(p);
-        // }
-
-        // return c;
+        upackagedSize_ = 0;
+        gotUnpackagedFrame_ = 0;
+        ELOG_DEBUG("Bytes decodificados = %d", c);
+        if (gotDecodedFrame && c > 0) {
+          ELOG_DEBUG("Tengo un frame decodificado!!");
+          gotDecodedFrame = 0;
           RawDataPacket p;
-          p.data = unpackagedBufferPtr_;
-          p.length = upackagedSize_;
+          p.data = decodedBuffer_;
+          p.length = c;
           p.type = VIDEO;
-          upackagedSize_ = 0;
-          gotUnpackagedFrame_ = 0;
           rawReceiver_->receiveRawData(p);
-          // return p.length;
-          return 0;
+        }
+
+        return c;
       }
     }
     return 0;
@@ -323,7 +314,7 @@ namespace erizo {
     }
 
     if (videoDecoder == 1) {
-      vDecoder.closeDecoder();      
+      vDecoder.closeDecoder();
       videoDecoder = 0;
     }
     free(decodedBuffer_); decodedBuffer_ = NULL;
@@ -368,7 +359,7 @@ namespace erizo {
       return 0;
     }
     if (mediaInfo.hasVideo) {
-      this->mediaInfo.videoCodec.codec = VIDEO_CODEC_VP8;
+      this->mediaInfo.videoCodec.codec = (erizo::VideoCodecID)71691;
       if (vCoder.initEncoder(mediaInfo.videoCodec)) {
         ELOG_DEBUG("Error initing encoder");
       }
@@ -414,10 +405,29 @@ namespace erizo {
   void OutputProcessor::receiveRawData(RawDataPacket& packet) {
     int hasFrame = 0;
     if (packet.type == VIDEO) {
-      //      ELOG_DEBUG("Encoding video: size %d", packet.length);
-      int a = vCoder.encodeVideo(packet.data, packet.length, encodedBuffer_,UNPACKAGED_BUFFER_SIZE,hasFrame);
+      ELOG_DEBUG("Encoding video: size %d", packet.length);
+      int a = vCoder.encodeVideo(packet.data, packet.length, encodedBuffer_, UNPACKAGED_BUFFER_SIZE, hasFrame);
       if (a > 0)
-        this->packageVideo(encodedBuffer_, a, packagedBuffer_);
+
+        // saving to a file directly
+        int c = vDecoder.decodeVideo(encodedBuffer_, a,
+                                 decodedBuffer_,
+                                 mediaInfo.videoCodec.width * mediaInfo.videoCodec.height * 3 / 2,
+                                 &gotDecodedFrame);
+
+        ELOG_DEBUG("Bytes decodificados = %d", c);
+        if (gotDecodedFrame && c > 0) {
+          ELOG_DEBUG("Tengo un frame decodificado!!");
+          gotDecodedFrame = 0;
+          RawDataPacket p;
+          p.data = decodedBuffer_;
+          p.length = c;
+          p.type = VIDEO;
+          rawReceiver_->receiveRawData(p);
+        }
+
+
+        // this->packageVideo(encodedBuffer_, a, packagedBuffer_);
     } else {
       //      int a = this->encodeAudio(packet.data, packet.length, &pkt);
       //      if (a > 0) {
@@ -508,7 +518,7 @@ namespace erizo {
     return (inBuffLen+head.getHeaderLength());
   }
 
-  int OutputProcessor::packageVideo(unsigned char* inBuff, int buffSize, unsigned char* outBuff, 
+  int OutputProcessor::packageVideo(unsigned char* inBuff, int buffSize, unsigned char* outBuff,
       long int pts) {
     if (videoPackager == 0) {
       ELOG_DEBUG("No se ha inicailizado el codec de output vídeo RTP");
@@ -533,10 +543,10 @@ namespace erizo {
       rtpHeader.setMarker(lastFrame?1:0);
       rtpHeader.setSeqNumber(seqnum_++);
       if (pts==0){
-          rtpHeader.setTimestamp(av_rescale(millis, 90000, 1000)); 
+          rtpHeader.setTimestamp(av_rescale(millis, 90000, 1000));
       }else{
-          rtpHeader.setTimestamp(av_rescale(pts, 90000, 1000)); 
-        
+          rtpHeader.setTimestamp(av_rescale(pts, 90000, 1000));
+
       }
       rtpHeader.setSSRC(55543);
       rtpHeader.setPayloadType(100);
