@@ -26,24 +26,19 @@ endif()
 
 include_directories("${CMAKE_CURRENT_SOURCE_DIR}/src/libs/" "/home/alvaro/Documentos/arqueopterix/payloader_test/libdeps/include/")
 
-file(GLOB_RECURSE SOURCES_SENDER "${CMAKE_CURRENT_SOURCE_DIR}/src/libs/*.h" "${CMAKE_CURRENT_SOURCE_DIR}/src/libs/*.c" "${CMAKE_CURRENT_SOURCE_DIR}/src/libs/*.cpp" "${CMAKE_CURRENT_SOURCE_DIR}/src/libs/*.cc" "${CMAKE_CURRENT_SOURCE_DIR}/src/sender.cpp")
+file(GLOB_RECURSE SOURCES_PROT1 "${CMAKE_CURRENT_SOURCE_DIR}/src/libs/*.h" "${CMAKE_CURRENT_SOURCE_DIR}/src/libs/*.c" "${CMAKE_CURRENT_SOURCE_DIR}/src/libs/*.cpp" "${CMAKE_CURRENT_SOURCE_DIR}/src/libs/*.cc" "${CMAKE_CURRENT_SOURCE_DIR}/src/prototype1.cpp")
 
-file(GLOB_RECURSE SOURCES_RECEIVER "${CMAKE_CURRENT_SOURCE_DIR}/src/libs/*.h" "${CMAKE_CURRENT_SOURCE_DIR}/src/libs/*.c" "${CMAKE_CURRENT_SOURCE_DIR}/src/libs/*.cpp" "${CMAKE_CURRENT_SOURCE_DIR}/src/libs/*.cc" "${CMAKE_CURRENT_SOURCE_DIR}/src/receiver.cpp")
-
-add_executable(sender ${SOURCES_SENDER})
-add_executable(receiver ${SOURCES_RECEIVER})
+add_executable(prototype1 ${SOURCES_PROT1})
 
 # GLIB
 find_package(Glib REQUIRED)
 include_directories(${GLIB_INCLUDE_DIRS})
-target_link_libraries(sender ${GLIB_LIBRARIES})
-target_link_libraries(receiver ${GLIB_LIBRARIES})
+target_link_libraries(prototype1 ${GLIB_LIBRARIES})
 
 # BOOST
 set (BOOST_LIBS thread regex system)
 find_package(Boost COMPONENTS ${BOOST_LIBS} REQUIRED)
-target_link_libraries(sender ${Boost_LIBRARIES})
-target_link_libraries(receiver ${Boost_LIBRARIES})
+target_link_libraries(prototype1 ${Boost_LIBRARIES})
 
 # GTHREAD
 find_library(GTHREAD gthread-2.0 HINTS "/home/alvaro/Documentos/webrtc/git/licode/build/libdeps/build/lib/")
@@ -85,5 +80,4 @@ test_lib(${LOG})
 
 message("Libs ${GTHREAD} ${SSL} ${CRYPTO} ${LIBS} ${LOG}")
 
-target_link_libraries(sender ${GTHREAD} ${SSL} ${CRYPTO} ${BZ2} ${AVRESAMP} ${LZMA} ${MATH} ${ZLIB} ${LIBS} ${LOG})
-target_link_libraries(receiver ${GTHREAD} ${SSL} ${CRYPTO} ${BZ2} ${AVRESAMP} ${LZMA} ${MATH} ${ZLIB} ${LIBS} ${LOG})
+target_link_libraries(prototype1 ${GTHREAD} ${SSL} ${CRYPTO} ${BZ2} ${AVRESAMP} ${LZMA} ${MATH} ${ZLIB} ${LIBS} ${LOG})
