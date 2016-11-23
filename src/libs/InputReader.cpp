@@ -13,7 +13,7 @@ InputReader::InputReader(const std::string& url) : input_url_(url) {
 }
 
 InputReader::~InputReader() {
-	deliver_thread_.join();
+	// deliver_thread_.join();
 	avformat_close_input(&av_context_);
 }
 
@@ -52,7 +52,7 @@ int InputReader::init(){
 
     ELOG_DEBUG("Video stream index %d, Audio Stream index %d", video_stream_index, audio_stream_index);
 
-    deliver_thread_ = boost::thread(&InputReader::deliverLoop, this);
+    // deliver_thread_ = boost::thread(&InputReader::deliverLoop, this);
 
     this->startReading();
 
@@ -74,13 +74,22 @@ void InputReader::startReading() {
 
 	while (av_read_frame(av_context_, &avpacket_) >= 0) {
 
-		AVBufferRef buff;
-		avpacket_.buf = &buff;
-		ELOG_DEBUG("Readed packet %d", avpacket_.size);
+		ELOG_DEBUG("Readed packet %d, index %ld", avpacket_.dts, avpacket_.stream_index);
 
-		queue_mutex_.lock();
-        packet_queue_.push(avpacket_);
-        queue_mutex_.unlock();
+		if (sink_ != NULL) {
+
+			AVMediaType type = AVMEDIA_TYPE_UNKNOWN;
+			if (avpacket_.stream_index == video_stream_index)
+				type = AVMEDIA_TYPE_VIDEO;
+			else if (avpacket_.stream_index == audio_stream_index)
+				type = AVMEDIA_TYPE_AUDIO;
+
+			sink_->receivePacket(avpacket_, type);
+		}
+
+		// queue_mutex_.lock();
+		// packet_queue_.push(avpacket_);
+		// queue_mutex_.unlock();
 
 	}
 
@@ -93,7 +102,7 @@ void InputReader::deliverLoop() {
 	while (reading_ == true) {
 		queue_mutex_.lock();
 		if (packet_queue_.size() > 0) {
-			ELOG_DEBUG("Delivering packet %d", packet_queue_.front().size);
+			ELOG_DEBUG("Delivering packet %ld", packet_queue_.front().pts);
 
 			AVMediaType type = AVMEDIA_TYPE_UNKNOWN;
 			if (packet_queue_.front().stream_index == video_stream_index)
@@ -101,7 +110,7 @@ void InputReader::deliverLoop() {
 			else if (packet_queue_.front().stream_index == audio_stream_index)
 				type = AVMEDIA_TYPE_AUDIO;
 
-		  	if (sink_ != NULL) {
+		  	if (sink_ != NULL && packet_queue_.front().pts > 0) {
 				sink_->receivePacket(packet_queue_.front(), type);
 			}
 

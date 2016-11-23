@@ -6,10 +6,13 @@
 
 int main(int argc, const char* argv[]) {
 
-	const char *url = "file:/home/alvaro/Documentos/arqueopterix/payloader_test/extras/output.mp4";
+	const char *url = "file:/home/alvaro/Documentos/arqueopterix/payloader_test/extras/video.avi";
+	// const char *url = "file:/home/alvaro/Documentos/arqueopterix/payloader_test/extras/output.mp4";
+
 	payloader::InputReader* reader = new payloader::InputReader(url);
 
-	const char *outputurl = "file:/home/alvaro/Documentos/arqueopterix/payloader_test/extras/result.mp4";
+	const char *outputurl = "file:/home/alvaro/Documentos/arqueopterix/payloader_test/extras/result.avi";	
+	// const char *outputurl = "file:/home/alvaro/Documentos/arqueopterix/payloader_test/extras/result.mp4";
 	payloader::OutputWriter* writer = new payloader::OutputWriter(outputurl);
 	writer->init();
 
