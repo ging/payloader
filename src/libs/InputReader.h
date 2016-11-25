@@ -34,8 +34,8 @@ class InputReader {
 	    std::queue<AVPacket> packet_queue_;
 	    bool reading_;
 	    PacketReceiver* sink_;
-	    int video_stream_index;
-	    int audio_stream_index;
+	    int video_stream_index_;
+	    int audio_stream_index_;
 
 	    boost::mutex queue_mutex_;
 		boost::thread deliver_thread_;

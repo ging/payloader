@@ -13,6 +13,7 @@ extern "C" {
 	#include <libavcodec/avcodec.h>
 	#include <libavformat/avformat.h>
 	#include <libavutil/avconfig.h>
+	#include <libavutil/time.h>
 }
 
 
@@ -30,6 +31,8 @@ class OutputWriter : public PacketReceiver {
 	private:
 		AVFormatContext* av_context_;
 		std::string output_url_;
+		AVStream *video_stream_;
+		AVStream *audio_stream_;
 
 };
 }	// Namespace payloader

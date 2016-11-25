@@ -6,7 +6,7 @@
 
 int main(int argc, const char* argv[]) {
 
-	const char *url = "file:/home/alvaro/Documentos/arqueopterix/payloader_test/extras/video.avi";
+	const char *url = "file:/home/alvaro/Documentos/arqueopterix/payloader_test/extras/video_2.avi";
 	// const char *url = "file:/home/alvaro/Documentos/arqueopterix/payloader_test/extras/output.mp4";
 
 	payloader::InputReader* reader = new payloader::InputReader(url);

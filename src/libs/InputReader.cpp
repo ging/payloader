@@ -42,15 +42,19 @@ int InputReader::init(){
       return res;
     }
 
-    video_stream_index = av_find_best_stream(av_context_, AVMEDIA_TYPE_VIDEO, -1, -1, NULL, 0);
-  	if (video_stream_index < 0)
+    audio_stream_index_ = av_find_best_stream(av_context_, AVMEDIA_TYPE_AUDIO, -1, -1, NULL, 0);
+  	if (audio_stream_index_ < 0)
+    	ELOG_WARN("No Audio stream found");
+    
+    video_stream_index_ = av_find_best_stream(av_context_, AVMEDIA_TYPE_VIDEO, -1, -1, NULL, 0);
+  	if (video_stream_index_ < 0)
     	ELOG_WARN("No Video stream found");
 
-    audio_stream_index = av_find_best_stream(av_context_, AVMEDIA_TYPE_AUDIO, -1, -1, NULL, 0);
-  	if (audio_stream_index < 0)
-    	ELOG_WARN("No Audio stream found");
+    int audio_codec = av_context_->streams[audio_stream_index_]->codecpar->codec_id;
+    int video_codec = av_context_->streams[video_stream_index_]->codecpar->codec_id;
+    ELOG_DEBUG("Audio codec %d, video codec %d", audio_codec, video_codec);
 
-    ELOG_DEBUG("Video stream index %d, Audio Stream index %d", video_stream_index, audio_stream_index);
+    ELOG_DEBUG("Video stream index %d, Audio Stream index %d", video_stream_index_, audio_stream_index_);
 
     // deliver_thread_ = boost::thread(&InputReader::deliverLoop, this);
 
@@ -74,17 +78,18 @@ void InputReader::startReading() {
 
 	while (av_read_frame(av_context_, &avpacket_) >= 0) {
 
-		ELOG_DEBUG("Readed packet %d, index %ld", avpacket_.dts, avpacket_.stream_index);
-
+		// ELOG_DEBUG("Readed packet pts: %ld, dts: %ld,  index %d", avpacket_.pts, avpacket_.dts, avpacket_.stream_index);
+		
 		if (sink_ != NULL) {
 
 			AVMediaType type = AVMEDIA_TYPE_UNKNOWN;
-			if (avpacket_.stream_index == video_stream_index)
+			if (avpacket_.stream_index == video_stream_index_)
 				type = AVMEDIA_TYPE_VIDEO;
-			else if (avpacket_.stream_index == audio_stream_index)
+			else if (avpacket_.stream_index == audio_stream_index_)
 				type = AVMEDIA_TYPE_AUDIO;
 
 			sink_->receivePacket(avpacket_, type);
+
 		}
 
 		// queue_mutex_.lock();
@@ -105,9 +110,9 @@ void InputReader::deliverLoop() {
 			ELOG_DEBUG("Delivering packet %ld", packet_queue_.front().pts);
 
 			AVMediaType type = AVMEDIA_TYPE_UNKNOWN;
-			if (packet_queue_.front().stream_index == video_stream_index)
+			if (packet_queue_.front().stream_index == video_stream_index_)
 				type = AVMEDIA_TYPE_VIDEO;
-			else if (packet_queue_.front().stream_index == audio_stream_index)
+			else if (packet_queue_.front().stream_index == audio_stream_index_)
 				type = AVMEDIA_TYPE_AUDIO;
 
 		  	if (sink_ != NULL && packet_queue_.front().pts > 0) {
