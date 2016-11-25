@@ -52,24 +52,6 @@ int OutputWriter::init(){
     av_context_->oformat->audio_codec = (AVCodecID)65536;
     av_context_->oformat->video_codec = (AVCodecID)13;
 
-    // Audio track
-	AVCodec* audioCodec = avcodec_find_encoder(av_context_->oformat->audio_codec);
-    if (audioCodec == NULL) {
-      ELOG_ERROR("Could not find audio codec");
-
-      return -1;
-    }
- 
-    audio_stream_ = avformat_new_stream(av_context_, audioCodec);
- 	audio_stream_->id = 1;
-    audio_stream_->codecpar->codec_type = AVMEDIA_TYPE_VIDEO;
-    audio_stream_->codecpar->codec_id = av_context_->oformat->audio_codec;
-	audio_stream_->codecpar->sample_rate = av_context_->oformat->audio_codec == AV_CODEC_ID_PCM_MULAW ? 8000 : 48000;
-    audio_stream_->time_base = (AVRational) { 1, audio_stream_->codecpar->sample_rate};
-    audio_stream_->codecpar->channels = av_context_->oformat->audio_codec == AV_CODEC_ID_PCM_MULAW ? 1 : 2;
-
-    av_context_->streams[1] = audio_stream_;
-
 	// Video track
 	AVCodec* videoCodec = avcodec_find_encoder(av_context_->oformat->video_codec);
     if (videoCodec == NULL) {
@@ -87,15 +69,31 @@ int OutputWriter::init(){
     video_stream_->codecpar->format = AV_PIX_FMT_YUV420P;
 
     av_context_->streams[0] = video_stream_;
-    
+
+    // Audio track
+    AVCodec* audioCodec = avcodec_find_encoder(av_context_->oformat->audio_codec);
+    if (audioCodec == NULL) {
+        ELOG_ERROR("Could not find audio codec");
+        return -1;
+    }
+ 
+    audio_stream_ = avformat_new_stream(av_context_, audioCodec);
+    audio_stream_->id = 1;
+    audio_stream_->codecpar->codec_type = AVMEDIA_TYPE_AUDIO;
+    audio_stream_->codecpar->codec_id = av_context_->oformat->audio_codec;
+    audio_stream_->codecpar->sample_rate = av_context_->oformat->audio_codec == AV_CODEC_ID_PCM_MULAW ? 8000 : 48000;
+    audio_stream_->time_base = (AVRational) { 1, audio_stream_->codecpar->sample_rate};
+    audio_stream_->codecpar->channels = av_context_->oformat->audio_codec == AV_CODEC_ID_PCM_MULAW ? 1 : 2;
+
+    av_context_->streams[1] = audio_stream_;
+
     res = avformat_write_header(av_context_, NULL);
 
     if (res < 0) {
 	    ELOG_ERROR("Error writing header");
 	    return -1;
 	}
- 
-
+    
     return 0;
 
 }
