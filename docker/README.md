@@ -27,7 +27,7 @@ This builds a new Docker image following the steps in `Dockerfile` and saves it 
 
 Now you can run a new container from the image you have just created with:
 
-	sudo docker run --name payloader-container payloader-image input_file output_file
+	sudo docker run --name payloader-container -v /path/to/your/videos/folder:/opt/payloader/media -e INPUT_FILE=media/<input_file> -e OUTPUT_FILE=media/<output_file> payloader-image 
 
 
 Where the different params mean: 
@@ -45,7 +45,7 @@ Here is an example of this command:
 
 You can also run the container from the [image we provide](https://hub.docker.com/r/ging/payloader/) in Docker Hub. In this case you have only to execute the run command. But now the image name is ging/payloader:*version* where `version` is the release you want to use:
 
-	sudo docker run --name payloader-container payloader-image myvideo.avi outputvideo.avi
+	sudo docker run --name payloader-container -v /path/to/your/videos/folder:/opt/payloader/media -e INPUT_FILE=media/<input_file> -e OUTPUT_FILE=media/<output_file> payloader-image
 
 > **Note**
 > If you do not specify a version you are pulling from `latest` by default.
