@@ -16,7 +16,7 @@ IF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}  -fno-stack-protector")
 ENDIF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 
-FIND_PACKAGE( OpenMP REQUIRED)
+FIND_PACKAGE(OpenMP REQUIRED)
 if(OPENMP_FOUND)
 	message("OPENMP FOUND")
 	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
@@ -24,7 +24,7 @@ if(OPENMP_FOUND)
 	set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${OpenMP_EXE_LINKER_FLAGS}")
 endif()
 
-include_directories("${CMAKE_CURRENT_SOURCE_DIR}/src/libs/" "/home/alvaro/Documentos/arqueopterix/payloader_test/libdeps/include/")
+include_directories("${CMAKE_CURRENT_SOURCE_DIR}/src/libs/")
 
 file(GLOB_RECURSE SOURCES_PROT1 "${CMAKE_CURRENT_SOURCE_DIR}/src/libs/*.h" "${CMAKE_CURRENT_SOURCE_DIR}/src/libs/*.c" "${CMAKE_CURRENT_SOURCE_DIR}/src/libs/*.cpp" "${CMAKE_CURRENT_SOURCE_DIR}/src/libs/*.cc" "${CMAKE_CURRENT_SOURCE_DIR}/src/prototype1.cpp")
 
@@ -41,13 +41,13 @@ find_package(Boost COMPONENTS ${BOOST_LIBS} REQUIRED)
 target_link_libraries(prototype1 ${Boost_LIBRARIES})
 
 # GTHREAD
-find_library(GTHREAD gthread-2.0 HINTS "/home/alvaro/Documentos/webrtc/git/licode/build/libdeps/build/lib/")
+find_library(GTHREAD gthread-2.0 HINTS)
 test_lib(${GTHREAD})
 
 # OPENSSL
-find_library(SSL ssl HINTS "/home/alvaro/Documentos/webrtc/git/licode/build/libdeps/build/lib/")
+find_library(SSL ssl HINTS)
 test_lib(${SSL})
-find_library(CRYPTO crypto HINTS "/home/alvaro/Documentos/webrtc/git/licode/build/libdeps/build/lib/")
+find_library(CRYPTO crypto HINTS)
 test_lib(${CRYPTO})
 
 # Math and Zlib
