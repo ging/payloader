@@ -16,9 +16,8 @@ RUN git clone https://github.com/magonzalezc/LHE.git && \
 	sudo make install
 
 # Install the project
-cd /root
-git clone https://github.com/ging/payloader.git
-cd /root/payloader
-./compile.sh
+RUN git clone https://github.com/ging/payloader.git && \
+	cd payloader && \
+	./compile.sh
 
 CMD ['./prototype1']
