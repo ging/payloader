@@ -27,12 +27,13 @@ This builds a new Docker image following the steps in `Dockerfile` and saves it 
 
 Now you can run a new container from the image you have just created with:
 
-	sudo docker run --name payloader-container -v /path/to/your/videos/folder:/opt/payloader/media -e INPUT_FILE=media/<input_file> -e OUTPUT_FILE=media/<output_file> payloader-image 
+	sudo docker run --name my-container -v /path/to/your/videos/folder:/opt/payloader/media -e INPUT_FILE=<input_file> -e OUTPUT_FILE=<output_file> payloader-image 
 
 
 Where the different params mean: 
 
-* --name is the name of the new container (you can use the name you want)
+* my-container is the name of the new container (you can use the name you want)
+* /path/to/your/videos/folder: here you have to specify the folder where your input video is located. The output video will be created also there.
 * input_file is the source of the media stream
 * output_file is the destination of the media stream
 
@@ -45,7 +46,7 @@ Here is an example of this command:
 
 You can also run the container from the [image we provide](https://hub.docker.com/r/ging/payloader/) in Docker Hub. In this case you have only to execute the run command. But now the image name is ging/payloader:*version* where `version` is the release you want to use:
 
-	sudo docker run --name payloader-container -v /path/to/your/videos/folder:/opt/payloader/media -e INPUT_FILE=media/<input_file> -e OUTPUT_FILE=media/<output_file> payloader-image
+	sudo docker run --name my-container -v /path/to/your/videos/folder:/opt/payloader/media -e INPUT_FILE=<input_file> -e OUTPUT_FILE=<output_file> payloader-image
 
 > **Note**
 > If you do not specify a version you are pulling from `latest` by default.
