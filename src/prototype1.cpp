@@ -6,16 +6,20 @@
 
 int main(int argc, const char* argv[]) {
 
-	const char *url = "file:/home/alvaro/Documentos/arqueopterix/payloader_test/extras/video_2.avi";
-	// const char *url = "file:/home/alvaro/Documentos/arqueopterix/payloader_test/extras/output.mp4";
+	if (argc != 3) {
+        printf("usage: %s input_file output_file\n"
+               "Example program to input-output a media file.\n"
+               "\n", argv[0]);
+        exit(1);
+    }
 
-	payloader::InputReader* reader = new payloader::InputReader(url);
+    const char *input_file = argv[1];
+    const char *output_file = argv[2];
 
-	const char *outputurl = "file:/home/alvaro/Documentos/arqueopterix/payloader_test/extras/result.avi";	
-	// const char *outputurl = "file:/home/alvaro/Documentos/arqueopterix/payloader_test/extras/result.mp4";
-	payloader::OutputWriter* writer = new payloader::OutputWriter(outputurl);
+	payloader::InputReader* reader = new payloader::InputReader(input_file);
+	payloader::OutputWriter* writer = new payloader::OutputWriter(output_file);
+	
 	writer->init();
-
 	reader->setSink(writer);
 	reader->init();
 }
