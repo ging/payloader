@@ -11,7 +11,7 @@ It is recommended to install this project in Ubuntu 14.04
 	sudo apt-get install yasm gcc g++ pkg-config make cmake git libgomp1 libglib2.0-dev libboost-regex-dev libboost-thread-dev libboost-system-dev libboost-test-dev libssl-dev liblzma-dev libbz2-dev liblog4cxx10-dev
   ```
 
-- Install ffmpeg version with LHE codec (detailed instructions [here https://github.com/magonzalezc/LHE/tree/lhe_develop_video])
+- Install ffmpeg version with LHE codec. Detailed instructions [here](https://github.com/magonzalezc/LHE/tree/lhe_develop_video)
 
   ```
 	git clone https://github.com/magonzalezc/LHE.git
