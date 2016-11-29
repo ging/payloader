@@ -23,4 +23,4 @@ RUN git clone https://github.com/ging/payloader.git && \
 	make
 
 WORKDIR /opt/payloader
-CMD ./prototype1 media/${INPUT_VIDEO} media/${OUTPUT_VIDEO}
+CMD ./prototype1 media/${INPUT_FILE} media/${OUTPUT_FILE}
