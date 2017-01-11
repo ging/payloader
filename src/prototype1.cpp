@@ -19,7 +19,7 @@ int main(int argc, const char* argv[]) {
 	payloader::InputReader* reader = new payloader::InputReader(input_file);
 	payloader::OutputWriter* writer = new payloader::OutputWriter(output_file);
 	
-	writer->init();
+	writer->init({}, {});
 	reader->setSink(writer);
 	reader->init();
 }

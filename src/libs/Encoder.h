@@ -2,6 +2,7 @@
 #define ENCODER_H_
 
 #include "Interfaces.h"
+#include "Codecs.h"
 
 #include <boost/scoped_ptr.hpp>
 #include <boost/thread.hpp>
@@ -24,7 +25,7 @@ class Encoder : public FrameReceiver {
 	public:
 	    Encoder();
 	    virtual ~Encoder();
-	    int init(bool audio, bool video);
+	    int init(AudioCodecInfo audioInfo, VideoCodecInfo videoInfo);
 	    void setSink(PacketReceiver* receiver);
 	    void receiveFrame(AVFrame* frame, AVMediaType type);
 

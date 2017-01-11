@@ -5,6 +5,7 @@
 #include "libs/OutputWriter.h"
 #include "libs/Decoder.h"
 #include "libs/Encoder.h"
+#include "libs/Codecs.h"
 
 int main(int argc, const char* argv[]) {
 
@@ -22,10 +23,21 @@ int main(int argc, const char* argv[]) {
 	payloader::Decoder* decoder = new payloader::Decoder();
 	payloader::Encoder* encoder = new payloader::Encoder();
 	payloader::OutputWriter* writer = new payloader::OutputWriter(output_file);
+
+	payloader::VideoCodecInfo videoInfo;
+	videoInfo.enabled = true;
+	videoInfo.codec = (AVCodecID)13;
+    videoInfo.width = 704;
+    videoInfo.height = 396;
+    videoInfo.bitRate = 48000;
+
+    payloader::AudioCodecInfo audioInfo;
+	audioInfo.enabled = true;
+	audioInfo.codec = (AVCodecID)65536;
 	
-	decoder->init(true, true);
-	encoder->init(true, true);
-	writer->init();
+	decoder->init(audioInfo, videoInfo);
+	encoder->init(audioInfo, videoInfo);
+	writer->init(audioInfo, videoInfo);
 	reader->setSink(decoder);
 	decoder->setSink(encoder);
 	encoder->setSink(writer);

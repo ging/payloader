@@ -17,12 +17,12 @@ Encoder::~Encoder() {
 
 }
 
-int Encoder::init(bool audio, bool video){
+int Encoder::init(AudioCodecInfo audioInfo, VideoCodecInfo videoInfo){
 
 	avcodec_register_all();
 
-	if (video) {
-		vEncoder_ = avcodec_find_encoder((AVCodecID)13);
+	if (videoInfo.enabled) {
+		vEncoder_ = avcodec_find_encoder(videoInfo.codec);
 		if (!vEncoder_) {
             ELOG_DEBUG("Error getting video encoder");
             return -1;
@@ -33,12 +33,12 @@ int Encoder::init(bool audio, bool video){
             return -1;
         }
 
-        vEncoderContext_->bit_rate = 400000;
-	    vEncoderContext_->width = 704;
-	    vEncoderContext_->height = 396;
+        vEncoderContext_->bit_rate = videoInfo.bitRate;
+	    vEncoderContext_->width = videoInfo.width;
+	    vEncoderContext_->height = videoInfo.height;
 	    vEncoderContext_->time_base = (AVRational){1, 25};
 	    vEncoderContext_->framerate = (AVRational){25, 1};
-	    vEncoderContext_->gop_size = 10; /* emit one intra frame every ten frames */
+	    vEncoderContext_->gop_size = 10;
 	    vEncoderContext_->max_b_frames=1;
 	    vEncoderContext_->pix_fmt = AV_PIX_FMT_YUV420P;
 	    
@@ -48,7 +48,7 @@ int Encoder::init(bool audio, bool video){
 	    }
 	}
 
-	if (audio) {
+	if (audioInfo.enabled) {
 		aEncoder_ = avcodec_find_encoder((AVCodecID)65536);
 		if (!aEncoder_) {
             ELOG_DEBUG("Error getting video encoder");

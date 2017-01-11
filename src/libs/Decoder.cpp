@@ -26,12 +26,12 @@ Decoder::~Decoder() {
         av_frame_free(&aFrame_);
 }
 
-int Decoder::init(bool audio, bool video) {
+int Decoder::init(AudioCodecInfo audioInfo, VideoCodecInfo videoInfo) {
 
 	avcodec_register_all();
 
-	if (video) {
-		vDecoder_ = avcodec_find_decoder((AVCodecID)13);
+	if (videoInfo.enabled) {
+		vDecoder_ = avcodec_find_decoder(videoInfo.codec);
         if (!vDecoder_) {
             ELOG_DEBUG("Error getting video decoder");
             return -1;
@@ -48,8 +48,8 @@ int Decoder::init(bool audio, bool video) {
             return -1;
         }
 
-        vDecoderContext_->width = 704;
-        vDecoderContext_->height = 396;
+        vDecoderContext_->width = videoInfo.width;
+        vDecoderContext_->height = videoInfo.height;
 
         vFrame_ = av_frame_alloc();
         if (!vFrame_) {
@@ -58,8 +58,8 @@ int Decoder::init(bool audio, bool video) {
         }
 	}
 
-	if (audio) {
-		aDecoder_ = avcodec_find_decoder((AVCodecID)65536);
+	if (audioInfo.enabled) {
+		aDecoder_ = avcodec_find_decoder(audioInfo.codec);
         if (!aDecoder_) {
             ELOG_DEBUG("Error getting audio decoder");
             return -1;

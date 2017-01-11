@@ -2,6 +2,7 @@
 #define OUTPUTWRITER_H_
 
 #include "Interfaces.h"
+#include "Codecs.h"
 
 #include <boost/scoped_ptr.hpp>
 #include <boost/thread.hpp>
@@ -25,7 +26,7 @@ class OutputWriter : public PacketReceiver {
 	public:
 	    OutputWriter(const std::string& url);
 	    virtual ~OutputWriter();
-	    int init();
+	    int init(AudioCodecInfo audioInfo, VideoCodecInfo videoInfo);
 	    void receivePacket(AVPacket& packet, AVMediaType type);
 
 	private:

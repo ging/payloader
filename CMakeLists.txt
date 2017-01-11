@@ -63,6 +63,17 @@ test_lib(${AVRESAMP})
 find_library(BZ2 bz2)
 test_lib(${BZ2})
 
+find_library(LVA va)
+test_lib(${LVA})
+find_library(LX11 X11)
+test_lib(${LX11})
+find_library(LVDPAU vdpau)
+test_lib(${LVDPAU})
+find_library(LVADRM va-drm)
+test_lib(${LVADRM})
+find_library(LVAx11 va-x11)
+test_lib(${LVAx11})
+
 # Libav
 find_library(AVUTIL avutil)
 test_lib(${AVUTIL})
@@ -82,8 +93,8 @@ message("Libs ${GTHREAD} ${SSL} ${CRYPTO} ${LIBS} ${LOG}")
 
 target_link_libraries(prototype1 ${GLIB_LIBRARIES})
 target_link_libraries(prototype1 ${Boost_LIBRARIES})
-target_link_libraries(prototype1 ${GTHREAD} ${SSL} ${CRYPTO} ${BZ2} ${AVRESAMP} ${LZMA} ${MATH} ${ZLIB} ${LIBS} ${LOG})
+target_link_libraries(prototype1 ${GTHREAD} ${SSL} ${CRYPTO} ${BZ2} ${AVRESAMP} ${LZMA} ${MATH} ${ZLIB} ${LIBS} ${LX11} ${LVA} ${LVADRM} ${LVAx11} ${LVDPAU} ${LOG})
 
 target_link_libraries(prototype2 ${GLIB_LIBRARIES})
 target_link_libraries(prototype2 ${Boost_LIBRARIES})
-target_link_libraries(prototype2 ${GTHREAD} ${SSL} ${CRYPTO} ${BZ2} ${AVRESAMP} ${LZMA} ${MATH} ${ZLIB} ${LIBS} ${LOG})
+target_link_libraries(prototype2 ${GTHREAD} ${SSL} ${CRYPTO} ${BZ2} ${AVRESAMP} ${LZMA} ${MATH} ${ZLIB} ${LIBS} ${LX11} ${LVA} ${LVADRM} ${LVAx11} ${LVDPAU}  ${LOG})
