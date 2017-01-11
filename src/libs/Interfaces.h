@@ -13,10 +13,10 @@ public:
 	virtual ~PacketReceiver() {}
 };
 
-class RawReceiver {
+class FrameReceiver {
 public:
-	virtual void receiveRawPacket(AVPacket& packet) = 0;
-	virtual ~RawReceiver() {}
+	virtual void receiveFrame(AVFrame* frame, AVMediaType type) = 0;
+	virtual ~FrameReceiver() {}
 };
 
 }	// Namespace payloader

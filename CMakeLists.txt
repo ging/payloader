@@ -27,18 +27,18 @@ endif()
 include_directories("${CMAKE_CURRENT_SOURCE_DIR}/src/libs/")
 
 file(GLOB_RECURSE SOURCES_PROT1 "${CMAKE_CURRENT_SOURCE_DIR}/src/libs/*.h" "${CMAKE_CURRENT_SOURCE_DIR}/src/libs/*.c" "${CMAKE_CURRENT_SOURCE_DIR}/src/libs/*.cpp" "${CMAKE_CURRENT_SOURCE_DIR}/src/libs/*.cc" "${CMAKE_CURRENT_SOURCE_DIR}/src/prototype1.cpp")
-
 add_executable(prototype1 ${SOURCES_PROT1})
+
+file(GLOB_RECURSE SOURCES_PROT2 "${CMAKE_CURRENT_SOURCE_DIR}/src/libs/*.h" "${CMAKE_CURRENT_SOURCE_DIR}/src/libs/*.c" "${CMAKE_CURRENT_SOURCE_DIR}/src/libs/*.cpp" "${CMAKE_CURRENT_SOURCE_DIR}/src/libs/*.cc" "${CMAKE_CURRENT_SOURCE_DIR}/src/prototype2.cpp")
+add_executable(prototype2 ${SOURCES_PROT2})
 
 # GLIB
 find_package(Glib REQUIRED)
 include_directories(${GLIB_INCLUDE_DIRS})
-target_link_libraries(prototype1 ${GLIB_LIBRARIES})
 
 # BOOST
 set (BOOST_LIBS thread regex system)
 find_package(Boost COMPONENTS ${BOOST_LIBS} REQUIRED)
-target_link_libraries(prototype1 ${Boost_LIBRARIES})
 
 # GTHREAD
 find_library(GTHREAD gthread-2.0 HINTS)
@@ -80,4 +80,10 @@ test_lib(${LOG})
 
 message("Libs ${GTHREAD} ${SSL} ${CRYPTO} ${LIBS} ${LOG}")
 
+target_link_libraries(prototype1 ${GLIB_LIBRARIES})
+target_link_libraries(prototype1 ${Boost_LIBRARIES})
 target_link_libraries(prototype1 ${GTHREAD} ${SSL} ${CRYPTO} ${BZ2} ${AVRESAMP} ${LZMA} ${MATH} ${ZLIB} ${LIBS} ${LOG})
+
+target_link_libraries(prototype2 ${GLIB_LIBRARIES})
+target_link_libraries(prototype2 ${Boost_LIBRARIES})
+target_link_libraries(prototype2 ${GTHREAD} ${SSL} ${CRYPTO} ${BZ2} ${AVRESAMP} ${LZMA} ${MATH} ${ZLIB} ${LIBS} ${LOG})

@@ -104,28 +104,28 @@ void InputReader::startReading() {
 }
 
 void InputReader::deliverLoop() {
-	while (reading_ == true) {
-		queue_mutex_.lock();
-		if (packet_queue_.size() > 0) {
-			ELOG_DEBUG("Delivering packet %ld", packet_queue_.front().pts);
+	// while (reading_ == true) {
+	// 	queue_mutex_.lock();
+	// 	if (packet_queue_.size() > 0) {
+	// 		ELOG_DEBUG("Delivering packet %ld", packet_queue_.front().pts);
 
-			AVMediaType type = AVMEDIA_TYPE_UNKNOWN;
-			if (packet_queue_.front().stream_index == video_stream_index_)
-				type = AVMEDIA_TYPE_VIDEO;
-			else if (packet_queue_.front().stream_index == audio_stream_index_)
-				type = AVMEDIA_TYPE_AUDIO;
+	// 		AVMediaType type = AVMEDIA_TYPE_UNKNOWN;
+	// 		if (packet_queue_.front().stream_index == video_stream_index_)
+	// 			type = AVMEDIA_TYPE_VIDEO;
+	// 		else if (packet_queue_.front().stream_index == audio_stream_index_)
+	// 			type = AVMEDIA_TYPE_AUDIO;
 
-		  	if (sink_ != NULL && packet_queue_.front().pts > 0) {
-				sink_->receivePacket(packet_queue_.front(), type);
-			}
+	// 	  	if (sink_ != NULL && packet_queue_.front().pts > 0) {
+	// 			sink_->receivePacket(packet_queue_.front(), type);
+	// 		}
 
-		  	packet_queue_.pop();
-		  	queue_mutex_.unlock();
-		} else {
-		  	queue_mutex_.unlock();
-		  	usleep(DELIVERING_INTERVAL);
-		}
-	}
+	// 	  	packet_queue_.pop();
+	// 	  	queue_mutex_.unlock();
+	// 	} else {
+	// 	  	queue_mutex_.unlock();
+	// 	  	usleep(DELIVERING_INTERVAL);
+	// 	}
+	// }
 }
 
 }	// Namespace payloader
