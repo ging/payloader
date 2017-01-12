@@ -43,16 +43,18 @@ Gets a MP4 file and outputs it in other MP4 file
 
 	```
 
+
 - Prototype 2
 
 Gets a MP4 file and outputs it in other MP4 file with decoding - encoding
 
-![Prototype2](img/prototype2.png =100x)
+<img src="img/prototype1.png" width="100">
 
   ```
 	./prototype1 input_file output_file
 
 	```
+
 
 - Prototype 3
 
