@@ -49,7 +49,7 @@ int Encoder::init(AudioCodecInfo audioInfo, VideoCodecInfo videoInfo){
 	}
 
 	if (audioInfo.enabled) {
-		aEncoder_ = avcodec_find_encoder((AVCodecID)65536);
+		aEncoder_ = avcodec_find_encoder(audioInfo.codec);
 		if (!aEncoder_) {
             ELOG_DEBUG("Error getting video encoder");
             return -1;

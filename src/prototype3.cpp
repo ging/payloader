@@ -31,13 +31,16 @@ int main(int argc, const char* argv[]) {
     videoInfo.height = 396;
     videoInfo.bitRate = 48000;
 
-    payloader::AudioCodecInfo audioInfo;
-	audioInfo.enabled = true;
-	audioInfo.codec = (AVCodecID)65536;
+	payloader::VideoCodecInfo videoInfoOut;
+	videoInfoOut.enabled = true;
+	videoInfoOut.codec = AV_CODEC_ID_MLHE;
+    videoInfoOut.width = 704;
+    videoInfoOut.height = 396;
+    videoInfoOut.bitRate = 48000;
 	
-	decoder->init(audioInfo, videoInfo);
-	encoder->init(audioInfo, videoInfo);
-	writer->init(audioInfo, videoInfo);
+	decoder->init({}, videoInfo);
+	encoder->init({}, videoInfoOut);
+	writer->init({}, videoInfoOut);
 	reader->setSink(decoder);
 	decoder->setSink(encoder);
 	encoder->setSink(writer);

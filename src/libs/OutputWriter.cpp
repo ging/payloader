@@ -40,7 +40,6 @@ int OutputWriter::init(AudioCodecInfo audioInfo, VideoCodecInfo videoInfo){
    	return -1;
   }
 
-
   ELOG_DEBUG("Output format %s", av_context_->oformat->long_name);
 	
   int res = avio_open2(&av_context_->pb, av_context_->filename, AVIO_FLAG_WRITE, NULL, NULL);
@@ -51,6 +50,9 @@ int OutputWriter::init(AudioCodecInfo audioInfo, VideoCodecInfo videoInfo){
 	}
     
   if (videoInfo.enabled) {
+
+    ELOG_ERROR("siiiiiiiiiiiii");
+
     av_context_->oformat->video_codec = videoInfo.codec;
 
   	// Video track
@@ -73,6 +75,8 @@ int OutputWriter::init(AudioCodecInfo audioInfo, VideoCodecInfo videoInfo){
   }
 
   if (audioInfo.enabled) {
+
+    ELOG_ERROR("eeeeeeeeeeeeeeeee");
     
     av_context_->oformat->audio_codec = audioInfo.codec;
 
@@ -92,6 +96,9 @@ int OutputWriter::init(AudioCodecInfo audioInfo, VideoCodecInfo videoInfo){
 
     av_context_->streams[1] = audio_stream_;
   }
+
+  ELOG_ERROR("eeeeeeeeeeeeeeeee");
+
 
   res = avformat_write_header(av_context_, NULL);
 

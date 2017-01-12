@@ -34,6 +34,32 @@ It is recommended to install this project in Ubuntu 14.04
 
 - Prototype 1
 
+Gets a MP4 file and outputs it in other MP4 file
+
+![Prototype1](img/prototype1.png)
+
+  ```
+	./prototype1 input_file output_file
+
+	```
+
+- Prototype 2
+
+Gets a MP4 file and outputs it in other MP4 file with decoding - encoding
+
+![Prototype1](img/prototype1.png)
+
+  ```
+	./prototype1 input_file output_file
+
+	```
+
+- Prototype 3
+
+Gets a MP4 file and outputs it in a MLHE file
+
+![Prototype1](img/prototype1.png)
+
   ```
 	./prototype1 input_file output_file
 

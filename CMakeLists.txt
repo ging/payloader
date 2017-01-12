@@ -32,6 +32,9 @@ add_executable(prototype1 ${SOURCES_PROT1})
 file(GLOB_RECURSE SOURCES_PROT2 "${CMAKE_CURRENT_SOURCE_DIR}/src/libs/*.h" "${CMAKE_CURRENT_SOURCE_DIR}/src/libs/*.c" "${CMAKE_CURRENT_SOURCE_DIR}/src/libs/*.cpp" "${CMAKE_CURRENT_SOURCE_DIR}/src/libs/*.cc" "${CMAKE_CURRENT_SOURCE_DIR}/src/prototype2.cpp")
 add_executable(prototype2 ${SOURCES_PROT2})
 
+file(GLOB_RECURSE SOURCES_PROT3 "${CMAKE_CURRENT_SOURCE_DIR}/src/libs/*.h" "${CMAKE_CURRENT_SOURCE_DIR}/src/libs/*.c" "${CMAKE_CURRENT_SOURCE_DIR}/src/libs/*.cpp" "${CMAKE_CURRENT_SOURCE_DIR}/src/libs/*.cc" "${CMAKE_CURRENT_SOURCE_DIR}/src/prototype2.cpp")
+add_executable(prototype3 ${SOURCES_PROT3})
+
 # GLIB
 find_package(Glib REQUIRED)
 include_directories(${GLIB_INCLUDE_DIRS})
@@ -98,3 +101,7 @@ target_link_libraries(prototype1 ${GTHREAD} ${SSL} ${CRYPTO} ${BZ2} ${AVRESAMP} 
 target_link_libraries(prototype2 ${GLIB_LIBRARIES})
 target_link_libraries(prototype2 ${Boost_LIBRARIES})
 target_link_libraries(prototype2 ${GTHREAD} ${SSL} ${CRYPTO} ${BZ2} ${AVRESAMP} ${LZMA} ${MATH} ${ZLIB} ${LIBS} ${LX11} ${LVA} ${LVADRM} ${LVAx11} ${LVDPAU}  ${LOG})
+
+target_link_libraries(prototype3 ${GLIB_LIBRARIES})
+target_link_libraries(prototype3 ${Boost_LIBRARIES})
+target_link_libraries(prototype3 ${GTHREAD} ${SSL} ${CRYPTO} ${BZ2} ${AVRESAMP} ${LZMA} ${MATH} ${ZLIB} ${LIBS} ${LX11} ${LVA} ${LVADRM} ${LVAx11} ${LVDPAU}  ${LOG})
