@@ -51,8 +51,6 @@ int OutputWriter::init(AudioCodecInfo audioInfo, VideoCodecInfo videoInfo){
     
   if (videoInfo.enabled) {
 
-    ELOG_ERROR("siiiiiiiiiiiii");
-
     av_context_->oformat->video_codec = videoInfo.codec;
 
   	// Video track
@@ -76,8 +74,6 @@ int OutputWriter::init(AudioCodecInfo audioInfo, VideoCodecInfo videoInfo){
 
   if (audioInfo.enabled) {
 
-    ELOG_ERROR("eeeeeeeeeeeeeeeee");
-    
     av_context_->oformat->audio_codec = audioInfo.codec;
 
     AVCodec* audioCodec = avcodec_find_encoder(av_context_->oformat->audio_codec);
@@ -96,9 +92,6 @@ int OutputWriter::init(AudioCodecInfo audioInfo, VideoCodecInfo videoInfo){
 
     av_context_->streams[1] = audio_stream_;
   }
-
-  ELOG_ERROR("eeeeeeeeeeeeeeeee");
-
 
   res = avformat_write_header(av_context_, NULL);
 

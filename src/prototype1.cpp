@@ -18,8 +18,19 @@ int main(int argc, const char* argv[]) {
 
 	payloader::InputReader* reader = new payloader::InputReader(input_file);
 	payloader::OutputWriter* writer = new payloader::OutputWriter(output_file);
+
+	payloader::VideoCodecInfo videoInfo;
+	videoInfo.enabled = true;
+	videoInfo.codec = AV_CODEC_ID_MPEG4;
+    videoInfo.width = 704;
+    videoInfo.height = 396;
+    videoInfo.bitRate = 48000;
+
+    payloader::AudioCodecInfo audioInfo;
+	audioInfo.enabled = true;
+	audioInfo.codec = (AVCodecID)65536;
 	
-	writer->init({}, {});
+	writer->init(audioInfo, videoInfo);
 	reader->setSink(writer);
 	reader->init();
 }
