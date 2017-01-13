@@ -19,7 +19,6 @@ extern "C" {
 
 namespace payloader {
 
-
 class Decoder : public PacketReceiver {
     DECLARE_LOGGER();
 	public:

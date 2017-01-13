@@ -19,6 +19,12 @@ public:
 	virtual ~FrameReceiver() {}
 };
 
+class RtpReceiver {
+public:
+	virtual void receiveRtpPacket(unsigned char* inBuff, int buffSize) = 0;
+	virtual ~RtpReceiver() {}
+};
+
 }	// Namespace payloader
 
 #endif // INTERFACES_H_ 
