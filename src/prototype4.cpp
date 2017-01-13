@@ -6,6 +6,7 @@
 #include "libs/Decoder.h"
 #include "libs/Encoder.h"
 #include "libs/Packager.h"
+#include "libs/Unpackager.h"
 #include "libs/Codecs.h"
 
 int main(int argc, const char* argv[]) {
@@ -22,8 +23,23 @@ int main(int argc, const char* argv[]) {
 
 	payloader::InputReader* reader = new payloader::InputReader(input_file);
 	payloader::Packager* packager = new payloader::Packager();
+	payloader::Unpackager* unpackager = new payloader::Unpackager();
+	payloader::OutputWriter* writer = new payloader::OutputWriter(output_file);
 
+	payloader::VideoCodecInfo videoInfo;
+	videoInfo.enabled = true;
+	videoInfo.codec = AV_CODEC_ID_MPEG4;
+    videoInfo.width = 704;
+    videoInfo.height = 396;
+    videoInfo.bitRate = 48000;
+
+
+	
+	writer->init({}, videoInfo);
 	packager->init();
+	unpackager->init();
 	reader->setSink(packager);
+	packager->setSink(unpackager);
+	unpackager->setSink(writer);
 	reader->init();
 }

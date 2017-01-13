@@ -72,7 +72,7 @@ void Packager::receivePacket(AVPacket& packet, AVMediaType type) {
 
             int l = outlen + rtpHeader.getHeaderLength();
 
-            ELOG_DEBUG("Sending RTP fragment %d", l);
+            ELOG_DEBUG("Sending RTP fragment %d timestamp %d", l, rtpHeader.timestamp);
 
 
             if (sink_ != NULL) {
