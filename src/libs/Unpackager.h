@@ -18,7 +18,7 @@ extern "C" {
 
 namespace payloader {
 
-#define UNPACKAGED_BUFFER_SIZE 150000
+#define UNPACKAGED_BUFFER_SIZE 1500000
 
 class Unpackager : public RtpReceiver {
     DECLARE_LOGGER();

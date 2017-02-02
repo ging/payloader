@@ -27,16 +27,22 @@ endif()
 include_directories("${CMAKE_CURRENT_SOURCE_DIR}/src/libs/")
 
 file(GLOB_RECURSE SOURCES_PROT1 "${CMAKE_CURRENT_SOURCE_DIR}/src/libs/*.h" "${CMAKE_CURRENT_SOURCE_DIR}/src/libs/*.c" "${CMAKE_CURRENT_SOURCE_DIR}/src/libs/*.cpp" "${CMAKE_CURRENT_SOURCE_DIR}/src/libs/*.cc" "${CMAKE_CURRENT_SOURCE_DIR}/src/prototype1.cpp")
-add_executable(prototype1 ${SOURCES_PROT1})
+#add_executable(prototype1 ${SOURCES_PROT1})
 
 file(GLOB_RECURSE SOURCES_PROT2 "${CMAKE_CURRENT_SOURCE_DIR}/src/libs/*.h" "${CMAKE_CURRENT_SOURCE_DIR}/src/libs/*.c" "${CMAKE_CURRENT_SOURCE_DIR}/src/libs/*.cpp" "${CMAKE_CURRENT_SOURCE_DIR}/src/libs/*.cc" "${CMAKE_CURRENT_SOURCE_DIR}/src/prototype2.cpp")
-add_executable(prototype2 ${SOURCES_PROT2})
+#add_executable(prototype2 ${SOURCES_PROT2})
 
 file(GLOB_RECURSE SOURCES_PROT3 "${CMAKE_CURRENT_SOURCE_DIR}/src/libs/*.h" "${CMAKE_CURRENT_SOURCE_DIR}/src/libs/*.c" "${CMAKE_CURRENT_SOURCE_DIR}/src/libs/*.cpp" "${CMAKE_CURRENT_SOURCE_DIR}/src/libs/*.cc" "${CMAKE_CURRENT_SOURCE_DIR}/src/prototype3.cpp")
-add_executable(prototype3 ${SOURCES_PROT3})
+#add_executable(prototype3 ${SOURCES_PROT3})
 
 file(GLOB_RECURSE SOURCES_PROT4 "${CMAKE_CURRENT_SOURCE_DIR}/src/libs/*.h" "${CMAKE_CURRENT_SOURCE_DIR}/src/libs/*.c" "${CMAKE_CURRENT_SOURCE_DIR}/src/libs/*.cpp" "${CMAKE_CURRENT_SOURCE_DIR}/src/libs/*.cc" "${CMAKE_CURRENT_SOURCE_DIR}/src/prototype4.cpp")
-add_executable(prototype4 ${SOURCES_PROT4})
+#add_executable(prototype4 ${SOURCES_PROT4})
+
+file(GLOB_RECURSE SOURCES_PROT5SEND "${CMAKE_CURRENT_SOURCE_DIR}/src/libs/*.h" "${CMAKE_CURRENT_SOURCE_DIR}/src/libs/*.c" "${CMAKE_CURRENT_SOURCE_DIR}/src/libs/*.cpp" "${CMAKE_CURRENT_SOURCE_DIR}/src/libs/*.cc" "${CMAKE_CURRENT_SOURCE_DIR}/src/prototype5_send.cpp")
+add_executable(prototype5_send ${SOURCES_PROT5SEND})
+
+file(GLOB_RECURSE SOURCES_PROT5REC "${CMAKE_CURRENT_SOURCE_DIR}/src/libs/*.h" "${CMAKE_CURRENT_SOURCE_DIR}/src/libs/*.c" "${CMAKE_CURRENT_SOURCE_DIR}/src/libs/*.cpp" "${CMAKE_CURRENT_SOURCE_DIR}/src/libs/*.cc" "${CMAKE_CURRENT_SOURCE_DIR}/src/prototype5_rec.cpp")
+add_executable(prototype5_rec ${SOURCES_PROT5REC})
 
 # GLIB
 find_package(Glib REQUIRED)
@@ -97,18 +103,26 @@ test_lib(${LOG})
 
 message("Libs ${GTHREAD} ${SSL} ${CRYPTO} ${LIBS} ${LOG}")
 
-target_link_libraries(prototype1 ${GLIB_LIBRARIES})
-target_link_libraries(prototype1 ${Boost_LIBRARIES})
-target_link_libraries(prototype1 ${GTHREAD} ${SSL} ${CRYPTO} ${BZ2} ${AVRESAMP} ${LZMA} ${MATH} ${ZLIB} ${LIBS} ${LX11} ${LVA} ${LVADRM} ${LVAx11} ${LVDPAU} ${LOG})
+#target_link_libraries(prototype1 ${GLIB_LIBRARIES})
+#target_link_libraries(prototype1 ${Boost_LIBRARIES})
+#target_link_libraries(prototype1 ${GTHREAD} ${SSL} ${CRYPTO} ${BZ2} ${AVRESAMP} ${LZMA} ${MATH} ${ZLIB} ${LIBS} ${LX11} ${LVA} ${LVADRM} ${LVAx11} ${LVDPAU} ${LOG})
 
-target_link_libraries(prototype2 ${GLIB_LIBRARIES})
-target_link_libraries(prototype2 ${Boost_LIBRARIES})
-target_link_libraries(prototype2 ${GTHREAD} ${SSL} ${CRYPTO} ${BZ2} ${AVRESAMP} ${LZMA} ${MATH} ${ZLIB} ${LIBS} ${LX11} ${LVA} ${LVADRM} ${LVAx11} ${LVDPAU}  ${LOG})
+#target_link_libraries(prototype2 ${GLIB_LIBRARIES})
+#target_link_libraries(prototype2 ${Boost_LIBRARIES})
+#target_link_libraries(prototype2 ${GTHREAD} ${SSL} ${CRYPTO} ${BZ2} ${AVRESAMP} ${LZMA} ${MATH} ${ZLIB} ${LIBS} ${LX11} ${LVA} ${LVADRM} ${LVAx11} ${LVDPAU}  ${LOG})
 
-target_link_libraries(prototype3 ${GLIB_LIBRARIES})
-target_link_libraries(prototype3 ${Boost_LIBRARIES})
-target_link_libraries(prototype3 ${GTHREAD} ${SSL} ${CRYPTO} ${BZ2} ${AVRESAMP} ${LZMA} ${MATH} ${ZLIB} ${LIBS} ${LX11} ${LVA} ${LVADRM} ${LVAx11} ${LVDPAU}  ${LOG})
+#target_link_libraries(prototype3 ${GLIB_LIBRARIES})
+#target_link_libraries(prototype3 ${Boost_LIBRARIES})
+#target_link_libraries(prototype3 ${GTHREAD} ${SSL} ${CRYPTO} ${BZ2} ${AVRESAMP} ${LZMA} ${MATH} ${ZLIB} ${LIBS} ${LX11} ${LVA} ${LVADRM} ${LVAx11} ${LVDPAU}  ${LOG})
 
-target_link_libraries(prototype4 ${GLIB_LIBRARIES})
-target_link_libraries(prototype4 ${Boost_LIBRARIES})
-target_link_libraries(prototype4 ${GTHREAD} ${SSL} ${CRYPTO} ${BZ2} ${AVRESAMP} ${LZMA} ${MATH} ${ZLIB} ${LIBS} ${LX11} ${LVA} ${LVADRM} ${LVAx11} ${LVDPAU}  ${LOG})
+#target_link_libraries(prototype4 ${GLIB_LIBRARIES})
+#target_link_libraries(prototype4 ${Boost_LIBRARIES})
+#target_link_libraries(prototype4 ${GTHREAD} ${SSL} ${CRYPTO} ${BZ2} ${AVRESAMP} ${LZMA} ${MATH} ${ZLIB} ${LIBS} ${LX11} ${LVA} ${LVADRM} ${LVAx11} ${LVDPAU}  ${LOG})
+
+target_link_libraries(prototype5_send ${GLIB_LIBRARIES})
+target_link_libraries(prototype5_send ${Boost_LIBRARIES})
+target_link_libraries(prototype5_send ${GTHREAD} ${SSL} ${CRYPTO} ${BZ2} ${AVRESAMP} ${LZMA} ${MATH} ${ZLIB} ${LIBS} ${LX11} ${LVA} ${LVADRM} ${LVAx11} ${LVDPAU}  ${LOG})
+
+target_link_libraries(prototype5_rec ${GLIB_LIBRARIES})
+target_link_libraries(prototype5_rec ${Boost_LIBRARIES})
+target_link_libraries(prototype5_rec ${GTHREAD} ${SSL} ${CRYPTO} ${BZ2} ${AVRESAMP} ${LZMA} ${MATH} ${ZLIB} ${LIBS} ${LX11} ${LVA} ${LVADRM} ${LVAx11} ${LVDPAU}  ${LOG})

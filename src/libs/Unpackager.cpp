@@ -34,7 +34,7 @@ void Unpackager::receiveRtpPacket(unsigned char* inBuff, int buffSize) {
     RtpHeader* head = reinterpret_cast<RtpHeader*>(inBuff);
     
 
-    ELOG_DEBUG("Received RTP packet size %d timestamp %d", buffSize, head->timestamp);
+    // ELOG_DEBUG("Received RTP packet size %d timestamp %d", buffSize, head->timestamp);
 
     AVMediaType type = AVMEDIA_TYPE_UNKNOWN;
 
@@ -45,14 +45,11 @@ void Unpackager::receiveRtpPacket(unsigned char* inBuff, int buffSize) {
      // type = AVMEDIA_TYPE_AUDIO;
 
 
-    int pt = head->getPayloadType();
+    // int pt = head->getPayloadType();
 
-    int inBuffOffset = 0;
-    inBuffOffset += head->getHeaderLength();
+    int inBuffOffset = head->getHeaderLength();
     int l = buffSize - head->getHeaderLength();
     
-    ELOG_DEBUG("eieieiei %d y %d", inBuffOffset, l);
-
     memcpy(unpackagedBuffer_, &inBuff[inBuffOffset], l);
 
     upackagedSize_ += l;
@@ -75,11 +72,14 @@ void Unpackager::receiveRtpPacket(unsigned char* inBuff, int buffSize) {
 
         // working on this
 
+        ELOG_DEBUG("Veamos %lld, %lld", head->getTimestamp(), first_video_timestamp_);
+
 
         long long timestampToWrite = (head->getTimestamp() - first_video_timestamp_) / (90000 / 1000);
 
-        pkt.pts = timestampToWrite;
+        // pkt.pts = timestampToWrite;
         pkt.dts = timestampToWrite;
+        ELOG_DEBUG("Voy a escribir paquetr %d", pkt.dts);
 
         if (sink_ != NULL) {
 

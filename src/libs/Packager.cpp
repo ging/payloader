@@ -44,7 +44,7 @@ void Packager::receivePacket(AVPacket& packet, AVMediaType type) {
 
         unsigned char* inBuff = packet.data;
         unsigned int buffSize = packet.size;
-        int pts = packet.pts;
+        int dts = packet.dts;
 
 
         RtpFragmenter frag(inBuff, buffSize);
@@ -52,7 +52,10 @@ void Packager::receivePacket(AVPacket& packet, AVMediaType type) {
         unsigned int outlen = 0;
         uint64_t millis = ClockUtils::timePointToMs(clock::now());
         // timestamp_ += 90000 / mediaInfo.videoCodec.frameRate;
-        // int64_t pts = av_rescale(lastPts_, 1000000, (long int)video_time_base_);
+        // int64_t dts = av_rescale(lastdts_, 1000000, (long int)video_time_base_);
+
+        ELOG_DEBUG("Sending packet with dts %d",packet.dts);
+
 
         do {
             outlen = 0;
@@ -60,10 +63,10 @@ void Packager::receivePacket(AVPacket& packet, AVMediaType type) {
             RtpHeader rtpHeader;
             rtpHeader.setMarker(lastFrame?1:0);
             rtpHeader.setSeqNumber(videoSeqNum_++);
-            if (pts == 0) {
+            if (dts == 0) {
                 rtpHeader.setTimestamp(av_rescale(millis, 90000, 1000));
             } else {
-                rtpHeader.setTimestamp(av_rescale(pts, 90000, 1000));
+                rtpHeader.setTimestamp(av_rescale(dts, 90000, 1000));
             }
             rtpHeader.setSSRC(55543);
             rtpHeader.setPayloadType(100);
@@ -72,7 +75,7 @@ void Packager::receivePacket(AVPacket& packet, AVMediaType type) {
 
             int l = outlen + rtpHeader.getHeaderLength();
 
-            ELOG_DEBUG("Sending RTP fragment %d timestamp %d", l, rtpHeader.timestamp);
+            // ELOG_DEBUG("Sending RTP fragment %d timestamp %d", l, rtpHeader.timestamp);
 
 
             if (sink_ != NULL) {
