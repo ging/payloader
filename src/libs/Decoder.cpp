@@ -104,14 +104,16 @@ void Decoder::receivePacket(AVPacket& packet, AVMediaType type) {
         }
 
         int ret;
+        ELOG_DEBUG("Trying to decode packet %d", ret);
         ret = avcodec_send_packet(vDecoderContext_, &packet);   
-
+        ELOG_DEBUG("Decoding packet %d", ret);
         if (ret < 0) {
             ELOG_DEBUG("Error sending a packet for decoding");
         }
 
         while (ret >= 0) {
             ret = avcodec_receive_frame(vDecoderContext_, vFrame_);
+            ELOG_DEBUG("received decoded frame %d", ret);
             if (ret == AVERROR(EAGAIN) || ret == AVERROR_EOF)
                 return;
             else if (ret < 0) {
