@@ -50,9 +50,9 @@ int InputReader::init(){
   	if (video_stream_index_ < 0)
     	ELOG_WARN("No Video stream found");
 
-    int audio_codec = av_context_->streams[audio_stream_index_]->codecpar->codec_id;
-    int video_codec = av_context_->streams[video_stream_index_]->codecpar->codec_id;
-    ELOG_DEBUG("Audio codec %d, video codec %d", audio_codec, video_codec);
+    // int audio_codec = av_context_->streams[audio_stream_index_]->codecpar->codec_id;
+    // int video_codec = av_context_->streams[video_stream_index_]->codecpar->codec_id;
+    // ELOG_DEBUG("Audio codec %d, video codec %d", audio_codec, video_codec);
 
     ELOG_DEBUG("Video stream index %d, Audio Stream index %d", video_stream_index_, audio_stream_index_);
 
