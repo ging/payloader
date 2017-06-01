@@ -122,10 +122,34 @@ void OutputWriter::receivePacket(AVPacket& packet, AVMediaType type) {
 void OutputWriter::receiveFrame(AVFrame* frame, AVMediaType type) {
 
   if (type == AVMEDIA_TYPE_VIDEO) {
+
+    ELOG_DEBUG("Received frame");
+
+    int w = 704;
+    int h = 396;
+    int pix_fmt = AV_PIX_FMT_YUV420P;
+
+    AVFrame *frameRGB;
+    frameRGB = av_frame_alloc();
+    uint8_t *buffer;
+    int numBytes;
+
+    AVPixelFormat pFormat = AV_PIX_FMT_BGR24;
+    numBytes = avpicture_get_size(pFormat, w, h) ;
+    buffer = (uint8_t *) av_malloc(numBytes*sizeof(uint8_t));
+    avpicture_fill((AVPicture *) frameRGB, buffer, pFormat, w, h);
+
+    struct SwsContext * img_convert_ctx;
+    img_convert_ctx = sws_getCachedContext(NULL, w, h, (AVPixelFormat)pix_fmt, w, h, AV_PIX_FMT_BGR24, SWS_BICUBIC, NULL, NULL,NULL);
+    sws_scale(img_convert_ctx, ((AVPicture*)frame)->data, ((AVPicture*)frame)->linesize, 0, h, ((AVPicture *)frameRGB)->data, ((AVPicture *)frameRGB)->linesize);
+
     //OpenCV
-    cv::Mat img(frame->height,frame->width,CV_8UC3,frame->data[0]); 
+    cv::Mat img(frame->height,frame->width,CV_8UC3,frameRGB->data[0]); 
     cv::imshow("display",img);
     cvWaitKey(1);
+
+    av_free(frameRGB);
+
     
   } else if (type == AVMEDIA_TYPE_AUDIO) {
 

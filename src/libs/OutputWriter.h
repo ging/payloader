@@ -15,6 +15,7 @@ extern "C" {
 	#include <libavformat/avformat.h>
 	#include <libavutil/avconfig.h>
 	#include <libavutil/time.h>
+	#include <libswscale/swscale.h>
 }
 
 #include <stdio.h>
