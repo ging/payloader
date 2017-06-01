@@ -49,11 +49,16 @@ int main(int argc, const char* argv[]) {
 
 
 	// 4b con transcodificación
-	encoder->init({}, mp4Info);
+	// encoder->init({}, mp4Info);
+	// decoder->init({}, lheInfo);
+	// unpackager->setSink(decoder);
+	// decoder->setSink(encoder);
+	// encoder->setSink(writer);
+
+	// 4d a display
 	decoder->init({}, lheInfo);
 	unpackager->setSink(decoder);
-	decoder->setSink(encoder);
-	encoder->setSink(writer);
+	decoder->setSink(writer);
 	
 
     // common

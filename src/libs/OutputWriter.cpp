@@ -119,6 +119,20 @@ void OutputWriter::receivePacket(AVPacket& packet, AVMediaType type) {
 	
 }
 
+void OutputWriter::receiveFrame(AVFrame* frame, AVMediaType type) {
+
+  if (type == AVMEDIA_TYPE_VIDEO) {
+    //OpenCV
+    cv::Mat img(frame->height,frame->width,CV_8UC3,frame->data[0]); 
+    cv::imshow("display",img);
+    cvWaitKey(1);
+    
+  } else if (type == AVMEDIA_TYPE_AUDIO) {
+
+  }
+        
+}
+
 
 
 }	// Namespace payloader

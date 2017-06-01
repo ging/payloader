@@ -17,10 +17,12 @@ It is recommended to install this project in Ubuntu 14.04
 	git clone https://github.com/magonzalezc/LHE.git
 	cd LHE
 	git checkout -b lhe_develop origin/lhe_develop
-	./configure --extra-cflags=-fopenmp --extra-ldflags=-fopenmp 
+	./configure --extra-cflags=-fopenmp --extra-ldflags=-fopenmp --enable-shared
 	sudo make
 	sudo make install
   ```
+
+- Install OpenCV following instructions in [Building OpenCV from Source Using CMake, Using the Command Line](http://docs.opencv.org/2.4/doc/tutorials/introduction/linux_install/linux_install.html#building-opencv-from-source-using-cmake-using-the-command-line)
 
 - Download and compile the software
 

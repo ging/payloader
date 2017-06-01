@@ -17,17 +17,20 @@ extern "C" {
 	#include <libavutil/time.h>
 }
 
+#include <stdio.h>
+#include <opencv2/opencv.hpp>
 
 namespace payloader {
 
 
-class OutputWriter : public PacketReceiver {
+class OutputWriter : public PacketReceiver, public FrameReceiver {
     DECLARE_LOGGER();
 	public:
 	    OutputWriter(const std::string& url);
 	    virtual ~OutputWriter();
 	    int init(AudioCodecInfo audioInfo, VideoCodecInfo videoInfo);
 	    void receivePacket(AVPacket& packet, AVMediaType type);
+	    void receiveFrame(AVFrame* frame, AVMediaType type);
 
 	private:
 		AVFormatContext* av_context_;

@@ -124,6 +124,10 @@ set (LIBS ${LIBS} ${AVFILTER})
 find_library(LOG log4cxx)
 test_lib(${LOG})
 
+# OpenCV
+set(OpenCV_DIR /usr/local/share/OpenCV)
+FIND_PACKAGE(OpenCV REQUIRED)
+
 message("Libs ${GTHREAD} ${SSL} ${CRYPTO} ${LIBS} ${LOG}")
 
 #target_link_libraries(prototype1 ${GLIB_LIBRARIES})
@@ -140,10 +144,10 @@ message("Libs ${GTHREAD} ${SSL} ${CRYPTO} ${LIBS} ${LOG}")
 
 target_link_libraries(prototype4_send ${GLIB_LIBRARIES})
 target_link_libraries(prototype4_send ${Boost_LIBRARIES})
-target_link_libraries(prototype4_send ${GTHREAD} ${SSL} ${CRYPTO} ${BZ2} ${AVRESAMP} ${LZMA} ${MATH} ${ZLIB} ${LIBS} ${LX11} ${LVA} ${LVADRM} ${LVAx11} ${LVDPAU} ${LOG} ${XCB} ${XEXT} ${ASOUND} ${XV} ${VDPAU} ${XCBFI} ${XCBSHAPE} ${XCBSHM} ${SDL} ${SWSCALE})
+target_link_libraries(prototype4_send ${GTHREAD} ${SSL} ${CRYPTO} ${BZ2} ${AVRESAMP} ${LZMA} ${MATH} ${ZLIB} ${LIBS} ${LX11} ${LVA} ${LVADRM} ${LVAx11} ${LVDPAU} ${LOG} ${XCB} ${XEXT} ${ASOUND} ${XV} ${VDPAU} ${XCBFI} ${XCBSHAPE} ${XCBSHM} ${SDL} ${SWSCALE} ${OpenCV_LIBS})
 
 target_link_libraries(prototype4_rec ${GLIB_LIBRARIES})
 target_link_libraries(prototype4_rec ${Boost_LIBRARIES})
-target_link_libraries(prototype4_rec ${GTHREAD} ${SSL} ${CRYPTO} ${BZ2} ${AVRESAMP} ${LZMA} ${MATH} ${ZLIB} ${LIBS} ${LX11} ${LVA} ${LVADRM} ${LVAx11} ${LVDPAU} ${LOG} ${XCB} ${XEXT} ${ASOUND} ${XV} ${VDPAU} ${XCBFI} ${XCBSHAPE} ${XCBSHM} ${SDL} ${SWSCALE})
+target_link_libraries(prototype4_rec ${GTHREAD} ${SSL} ${CRYPTO} ${BZ2} ${AVRESAMP} ${LZMA} ${MATH} ${ZLIB} ${LIBS} ${LX11} ${LVA} ${LVADRM} ${LVAx11} ${LVDPAU} ${LOG} ${XCB} ${XEXT} ${ASOUND} ${XV} ${VDPAU} ${XCBFI} ${XCBSHAPE} ${XCBSHM} ${SDL} ${SWSCALE} ${OpenCV_LIBS})
 
 # check lib dependencies pkg-config --libs libavdevice
