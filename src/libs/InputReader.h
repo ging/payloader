@@ -24,7 +24,7 @@ namespace payloader {
 class InputReader {
     DECLARE_LOGGER();
 	public:
-	    InputReader(const std::string& url, bool device);
+	    InputReader(const std::string& url, const char *device);
 	    virtual ~InputReader();
 	    int init();
 	    void setSink(PacketReceiver* receiver);
@@ -32,7 +32,7 @@ class InputReader {
 	private:
 	    AVFormatContext* av_context_;
 	    std::string input_url_;
-	    bool input_device_;
+	    const char *input_device_;
 	    std::queue<AVPacket> packet_queue_;
 	    bool reading_;
 	    PacketReceiver* sink_;

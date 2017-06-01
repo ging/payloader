@@ -43,6 +43,8 @@ int Decoder::init(AudioCodecInfo audioInfo, VideoCodecInfo videoInfo) {
             return -1;
         }
 
+        vDecoderContext_->pix_fmt = videoInfo.pix_fmt;
+
         if (avcodec_open2(vDecoderContext_, vDecoder_, NULL) < 0) {
             ELOG_DEBUG("Error opening video decoder");
             return -1;

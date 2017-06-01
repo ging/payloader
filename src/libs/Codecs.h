@@ -14,6 +14,7 @@ namespace payloader {
     int height;
     int bitRate;
     int frameRate;
+    AVPixelFormat pix_fmt;  
     VideoCodecInfo():enabled(false) { }
   };
 

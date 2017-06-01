@@ -11,16 +11,19 @@
 int main(int argc, const char* argv[]) {
 
 	if (argc != 3) {
-        printf("usage: %s input_file\n device"
+        printf("usage: %s input\n device"
                "Example program to input-output media to UDP.\n"
                "\n", argv[0]);
         exit(1);
     }
 
-    const char *input_file = argv[1];
-    bool device = argv[2];
+    // file: myvideo.avi
+    // camera: /dev/video0 vfwcap
+    // desktop :0.0 x11grab
+    const char *input = argv[1];
+    const char *device = argv[2];
 
-	payloader::InputReader* reader = new payloader::InputReader(input_file, device);
+	payloader::InputReader* reader = new payloader::InputReader(input, device);
 	payloader::Packager* packager = new payloader::Packager();
 	payloader::Decoder* decoder = new payloader::Decoder();
 	payloader::Encoder* encoder = new payloader::Encoder();
@@ -40,11 +43,19 @@ int main(int argc, const char* argv[]) {
     mjpegInfo.height = 480;
     mjpegInfo.bitRate = 4800;
 
+    payloader::VideoCodecInfo rv32Info;
+	rv32Info.enabled = true;
+	rv32Info.codec = AV_CODEC_ID_RAWVIDEO;
+    rv32Info.width = 704;
+    rv32Info.height = 396;
+    rv32Info.bitRate = 4800;
+    rv32Info.pix_fmt = AV_PIX_FMT_YUV420P;
+
     payloader::VideoCodecInfo lheInfo;
 	lheInfo.enabled = true;
 	lheInfo.codec = AV_CODEC_ID_MLHE;
-    lheInfo.width = 704;
-    lheInfo.height = 396;
+    lheInfo.width = 1680;
+    lheInfo.height = 1050;
     lheInfo.bitRate = 48000;
 
     // common
@@ -69,6 +80,13 @@ int main(int argc, const char* argv[]) {
 	reader->setSink(decoder);
 	decoder->setSink(encoder);
 	encoder->setSink(packager);
+
+	// 4e desde desktop
+	// encoder->init({}, lheInfo);
+	// decoder->init({}, rv32Info);
+	// reader->setSink(decoder);
+	// decoder->setSink(encoder);
+	// encoder->setSink(packager);
 
 	// common
 	packager->setSink(sender);
