@@ -5,7 +5,7 @@ namespace payloader {
 
 DEFINE_LOGGER(InputReader, "InputReader");
 
-InputReader::InputReader(const std::string& url) : input_url_(url) {
+InputReader::InputReader(const std::string& url, bool device) : input_url_(url), input_device_(device) {
     ELOG_DEBUG("Creating source reader to %s", url.c_str());
     av_context_ = NULL;
     reading_ = false;
@@ -20,12 +20,18 @@ InputReader::~InputReader() {
 int InputReader::init(){
 
 	av_register_all();
+	avdevice_register_all();
 	av_context_ = avformat_alloc_context();
-	
+
+	AVInputFormat *a = NULL;
+	if (input_device_ == true) {
+		a = av_find_input_format("vfwcap");
+	}
+
 	char errbuff[500];
 
 	ELOG_DEBUG("Opening source %s", input_url_.c_str());
-	int res = avformat_open_input(&av_context_, input_url_.c_str(), NULL, NULL);
+	int res = avformat_open_input(&av_context_, input_url_.c_str(), a, NULL);
 	ELOG_DEBUG("Opening source result %d", res);
 	if(res != 0){
 		av_strerror(res, (char*)(&errbuff), 500);

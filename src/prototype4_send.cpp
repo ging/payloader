@@ -10,16 +10,17 @@
 
 int main(int argc, const char* argv[]) {
 
-	if (argc != 2) {
-        printf("usage: %s input_file\n"
-               "Example program to input-output a media file to UDP.\n"
+	if (argc != 3) {
+        printf("usage: %s input_file\n device"
+               "Example program to input-output media to UDP.\n"
                "\n", argv[0]);
         exit(1);
     }
 
     const char *input_file = argv[1];
+    bool device = argv[2];
 
-	payloader::InputReader* reader = new payloader::InputReader(input_file);
+	payloader::InputReader* reader = new payloader::InputReader(input_file, device);
 	payloader::Packager* packager = new payloader::Packager();
 	payloader::Decoder* decoder = new payloader::Decoder();
 	payloader::Encoder* encoder = new payloader::Encoder();
@@ -31,6 +32,13 @@ int main(int argc, const char* argv[]) {
     mp4Info.width = 704;
     mp4Info.height = 396;
     mp4Info.bitRate = 48000;
+
+    payloader::VideoCodecInfo mjpegInfo;
+	mjpegInfo.enabled = true;
+	mjpegInfo.codec = AV_CODEC_ID_MJPEG;
+    mjpegInfo.width = 640;
+    mjpegInfo.height = 480;
+    mjpegInfo.bitRate = 4800;
 
     payloader::VideoCodecInfo lheInfo;
 	lheInfo.enabled = true;
@@ -49,12 +57,18 @@ int main(int argc, const char* argv[]) {
 
 
 	// 4b con transcodificación
+	// encoder->init({}, lheInfo);
+	// decoder->init({}, mp4Info);
+	// reader->setSink(decoder);
+	// decoder->setSink(encoder);
+	// encoder->setSink(packager);
+
+	// 4c desde webcam MJPEG
 	encoder->init({}, lheInfo);
-	decoder->init({}, mp4Info);
+	decoder->init({}, mjpegInfo);
 	reader->setSink(decoder);
 	decoder->setSink(encoder);
 	encoder->setSink(packager);
-
 
 	// common
 	packager->setSink(sender);
