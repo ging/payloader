@@ -125,8 +125,8 @@ void OutputWriter::receiveFrame(AVFrame* frame, AVMediaType type) {
 
     ELOG_DEBUG("Received frame");
 
-    int w = 704;
-    int h = 396;
+    int w = frame->width;
+    int h = frame->height;
     int pix_fmt = AV_PIX_FMT_YUV420P;
 
     AVFrame *frameRGB;
@@ -144,7 +144,7 @@ void OutputWriter::receiveFrame(AVFrame* frame, AVMediaType type) {
     sws_scale(img_convert_ctx, ((AVPicture*)frame)->data, ((AVPicture*)frame)->linesize, 0, h, ((AVPicture *)frameRGB)->data, ((AVPicture *)frameRGB)->linesize);
 
     //OpenCV
-    cv::Mat img(frame->height,frame->width,CV_8UC3,frameRGB->data[0]); 
+    cv::Mat img(frame->height, frame->width, CV_8UC3, frameRGB->data[0]); 
     cv::imshow("display",img);
     cvWaitKey(1);
 
