@@ -8,7 +8,7 @@ It is recommended to install this project in Ubuntu 14.04
 
   ```
 	sudo apt-get update
-	sudo apt-get install yasm gcc g++ pkg-config make cmake git libgomp1 libglib2.0-dev libboost-regex-dev libboost-thread-dev libboost-system-dev libboost-test-dev libssl-dev liblzma-dev libbz2-dev liblog4cxx10-dev
+	sudo apt-get install yasm gcc g++ pkg-config make cmake git libgomp1 libglib2.0-dev libboost-regex-dev libboost-thread-dev libboost-system-dev libboost-test-dev libssl-dev liblzma-dev libbz2-dev liblog4cxx10-dev libva-dev libvdpau-dev libxcb-fixes0-dev libxcb-shape0-dev libxcb-shm0-dev
   ```
 
 - Install ffmpeg version with LHE codec. Detailed instructions [here](https://github.com/magonzalezc/LHE/tree/lhe_develop_video)
