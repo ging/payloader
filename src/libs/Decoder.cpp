@@ -35,12 +35,16 @@ int Decoder::init(AudioCodecInfo audioInfo, VideoCodecInfo videoInfo) {
         if (!vDecoder_) {
             ELOG_DEBUG("Error getting video decoder");
             return -1;
+        }else{
+              ELOG_DEBUG("Decoder finded");
         }
 
         vDecoderContext_ = avcodec_alloc_context3(vDecoder_);
         if (!vDecoderContext_) {
             ELOG_DEBUG("Error getting allocating decoder context");
             return -1;
+        }else{
+              ELOG_DEBUG("Context finded");
         }
 
         vDecoderContext_->pix_fmt = videoInfo.pix_fmt;
@@ -48,6 +52,8 @@ int Decoder::init(AudioCodecInfo audioInfo, VideoCodecInfo videoInfo) {
         if (avcodec_open2(vDecoderContext_, vDecoder_, NULL) < 0) {
             ELOG_DEBUG("Error opening video decoder");
             return -1;
+        }else{
+              ELOG_DEBUG("Decoder opened");
         }
 
         vDecoderContext_->width = videoInfo.width;
@@ -57,6 +63,8 @@ int Decoder::init(AudioCodecInfo audioInfo, VideoCodecInfo videoInfo) {
         if (!vFrame_) {
             ELOG_DEBUG("Error allocating video frame");
             return -1;
+        }else{
+              ELOG_DEBUG("Video frame alocated: %d and %d ",  vDecoderContext_->width,  vDecoderContext_->height );
         }
 	}
 
@@ -88,6 +96,7 @@ int Decoder::init(AudioCodecInfo audioInfo, VideoCodecInfo videoInfo) {
         }
 	}
 
+    ELOG_DEBUG("Codec init finished")
     return true;
 
 }
@@ -102,24 +111,29 @@ void Decoder::receivePacket(AVPacket& packet, AVMediaType type) {
 
     if (type == AVMEDIA_TYPE_VIDEO) {
         if (vDecoder_ == 0 || vDecoderContext_ == 0) {
-            ELOG_DEBUG("Init Codec First");
+            ELOG_DEBUG("Init Codec First because..." );
         }
 
         int ret;
         ELOG_DEBUG("Trying to decode packet %d", ret);
         ret = avcodec_send_packet(vDecoderContext_, &packet);   
-        ELOG_DEBUG("Decoding packet %d", ret);
+        ELOG_DEBUG("Decoding packet number %d", ret);
         if (ret < 0) {
             ELOG_DEBUG("Error sending a packet for decoding");
+        }else{
+              ELOG_DEBUG("ret vale: %d",ret );
         }
 
         while (ret >= 0) {
             ret = avcodec_receive_frame(vDecoderContext_, vFrame_);
-            ELOG_DEBUG("received decoded frame %d", ret);
-            if (ret == AVERROR(EAGAIN) || ret == AVERROR_EOF)
+            ELOG_DEBUG("Received decoded frame %d", ret);
+            if (ret == AVERROR(EAGAIN) || ret == AVERROR_EOF){
+                  ELOG_DEBUG("Error decodificando el frame, ret vale: %d  ",ret );
                 return;
-            else if (ret < 0) {
+            }else if (ret < 0) {
                 ELOG_DEBUG("Error during decoding");
+            }else{
+                ELOG_DEBUG("ret vale: %d", ret);
             }
 
             ELOG_DEBUG("Has decoded frame %d", vDecoderContext_->frame_number);
@@ -132,7 +146,7 @@ void Decoder::receivePacket(AVPacket& packet, AVMediaType type) {
 
     } else if (type == AVMEDIA_TYPE_AUDIO) {
         if (aDecoder_ == 0 || aDecoderContext_ == 0) {
-            ELOG_DEBUG("Init Codec First");
+          //  ELOG_DEBUG("Init Codec First AUDIO");
             return;
         }
 

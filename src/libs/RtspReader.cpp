@@ -18,7 +18,7 @@ RtspReader::~RtspReader() {
 }
 
 int RtspReader::init(){
-
+	avformat_network_init();
 	av_register_all();
 	avdevice_register_all();
 	av_context_ = avformat_alloc_context();
@@ -83,8 +83,8 @@ void RtspReader::startReading() {
 	reading_ = true;
 
 	while (av_read_frame(av_context_, &avpacket_) >= 0) {
-
-		// ELOG_DEBUG("Readed packet pts: %ld, dts: %ld,  index %d", avpacket_.pts, avpacket_.dts, avpacket_.stream_index);
+ 
+		ELOG_DEBUG("Readed packet pts: %ld, dts: %ld,  index %d", avpacket_.pts, avpacket_.dts, avpacket_.stream_index);
 		
 		if (sink_ != NULL) {
 

@@ -18,15 +18,16 @@ if (argc != 3) {
                "\n", argv[0]);
         exit(1);
     }
-   // const char *input_file = argv[1];
-    const char *output_file = argv[2];
+    
+	const char *input_file = argv[1];
+	const char *output_file = argv[2];
 
-	payloader::Receiver* receiver = new payloader::Receiver(3001);
-	payloader::Unpackager* unpackager = new payloader::Unpackager();
+	//payloader::Receiver* receiver = new payloader::Receiver(3001);
+	//payloader::Unpackager* unpackager = new payloader::Unpackager();
 	payloader::Decoder* decoder = new payloader::Decoder();
 	//payloader::Encoder* encoder = new payloader::Encoder();
 	payloader::OutputWriter* writer = new payloader::OutputWriter(output_file);
-	//payloader::RtspReader* receiver_rtsp = new payloader::RtspReader(input_file, NULL);
+	payloader::RtspReader* receiver_rtsp = new payloader::RtspReader(input_file,NULL);
 
 	payloader::VideoCodecInfo mp4Info;
 	mp4Info.enabled = true;
@@ -44,7 +45,7 @@ if (argc != 3) {
 
     // common
 	writer->init({}, mp4Info);
-	unpackager->init();
+	//unpackager->init();
 	
 
 	// 4a sin transcodificación
@@ -59,12 +60,17 @@ if (argc != 3) {
 	// encoder->setSink(writer);
 
 	// 4d a display
-	decoder->init({}, lheInfo);
-	unpackager->setSink(decoder);
+	decoder->init({}, mp4Info);
+	//unpackager->setSink(decoder);
 	decoder->setSink(writer);
+
+	//
 	
 
     // common
-	receiver->setSink(unpackager);
-	receiver->init();
+	//receiver->setSink(unpackager);
+	receiver_rtsp->setSink(decoder);
+	//receiver->init();
+	receiver_rtsp->init();
+
 }
