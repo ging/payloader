@@ -60,7 +60,7 @@ if (argc != 3) {
 	// encoder->setSink(writer);
 
 	// 4d a display
-	decoder->init({}, mp4Info);
+	//decoder->init({}, mp4Info);
 	//unpackager->setSink(decoder);
 	decoder->setSink(writer);
 

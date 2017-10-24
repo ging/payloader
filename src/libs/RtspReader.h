@@ -38,6 +38,7 @@ class RtspReader {
 	    PacketReceiver* sink_;
 	    int video_stream_index_;
 	    int audio_stream_index_;
+	    AVCodecContext *pCodecCtx;
 
 	    boost::mutex queue_mutex_;
 		boost::thread deliver_thread_;

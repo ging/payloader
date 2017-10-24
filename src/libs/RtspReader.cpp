@@ -56,6 +56,9 @@ int RtspReader::init(){
   	if (video_stream_index_ < 0)
     	ELOG_WARN("No Video stream found");
 
+     // Get a pointer to the codec context for the video stream
+	pCodecCtx=av_context_->streams[video_stream_index_]->codec;
+
     // int audio_codec = av_context_->streams[audio_stream_index_]->codecpar->codec_id;
     // int video_codec = av_context_->streams[video_stream_index_]->codecpar->codec_id;
     // ELOG_DEBUG("Audio codec %d, video codec %d", audio_codec, video_codec);
@@ -76,9 +79,11 @@ void RtspReader::setSink(PacketReceiver* receiver) {
 
 
 void RtspReader::startReading() {
-
+	
 	AVPacket avpacket_;
 	avpacket_.data = NULL;
+	//Aquí tenemos que conseguir pasarle al decoder este pCodecCtx
+	sink_->init(pCodecCtx);
 
 	reading_ = true;
 
