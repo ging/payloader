@@ -22,6 +22,9 @@ OutputWriter::~OutputWriter() {
       av_context_ = NULL;
   }
 }
+int OutputWriter::init(AVCodecContext *pCodecCtx) {
+  return 0;
+}
 
 int OutputWriter::init(AudioCodecInfo audioInfo, VideoCodecInfo videoInfo){
 	av_register_all();
@@ -157,6 +160,9 @@ void OutputWriter::receiveFrame(AVFrame* frame, AVMediaType type) {
         
 }
 
-
+void OutputWriter::setSink(FrameReceiver* receiver) {
+  sink_ = receiver;
+  return;
+}
 
 }	// Namespace payloader

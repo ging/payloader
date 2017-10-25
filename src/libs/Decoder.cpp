@@ -36,10 +36,10 @@ int Decoder::init(AVCodecContext *pCodecCtx) {
             ELOG_DEBUG("Error getting video decoder");
             return -1;
         }else{
-              ELOG_DEBUG("Decoder finded");
+              ELOG_DEBUG("Decoder finded ID: %d", pCodecCtx->codec_id );
         }
 
-        vDecoderContext_orig = avcodec_alloc_context3(vDecoder_);
+        vDecoderContext_ = avcodec_alloc_context3(vDecoder_);
         if (!vDecoderContext_) {
             ELOG_DEBUG("Error getting allocating decoder context");
             return -1;
@@ -48,9 +48,11 @@ int Decoder::init(AVCodecContext *pCodecCtx) {
         }
 
         // Copy context
-        if(avcodec_copy_context(vDecoderContext_, vDecoderContext_orig) != 0) {
+        if(avcodec_copy_context(vDecoderContext_, pCodecCtx) != 0) {
           fprintf(stderr, "Couldn't copy codec context");
           return -1; // Error copying codec context
+        }else{
+            ELOG_DEBUG("Context copied");
         }
 
        // vDecoderContext_->pix_fmt = videoInfo.pix_fmt;
@@ -109,6 +111,7 @@ int Decoder::init(AVCodecContext *pCodecCtx) {
 
 void Decoder::setSink(FrameReceiver* receiver) {
 	sink_ = receiver;
+    return;
 }
 
 void Decoder::receivePacket(AVPacket& packet, AVMediaType type) {
