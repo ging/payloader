@@ -7,7 +7,6 @@ extern "C" {
 
 namespace payloader {
 
-
 class FrameReceiver {
 public:
 	virtual void receiveFrame(AVFrame* frame, AVMediaType type) = 0;
@@ -19,6 +18,7 @@ public:
 	virtual void receivePacket(AVPacket& packet, AVMediaType type) = 0;
 	virtual int init(AVCodecContext *pCodecCtx) = 0;
 	virtual void setSink(FrameReceiver* receiver) = 0;
+	virtual void setSink(PacketReceiver* receiver) = 0;
 	virtual ~PacketReceiver() {}
 };
 
