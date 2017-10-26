@@ -34,6 +34,7 @@ class OutputWriter : public PacketReceiver, public FrameReceiver {
 	    void receivePacket(AVPacket& packet, AVMediaType type);
 	    void receiveFrame(AVFrame* frame, AVMediaType type);
 	    void setSink(FrameReceiver* receiver);
+	    void saveFrame(AVFrame *pFrame, int width, int height, int iFrame);
 		//void setSink(PacketReceiver* receiver);
 
 	private:
@@ -42,7 +43,8 @@ class OutputWriter : public PacketReceiver, public FrameReceiver {
 		AVStream *video_stream_;
 		AVStream *audio_stream_;
 		FrameReceiver* sink_;
-
+		int i,one;
+		cv::VideoWriter output;
 };
 }	// Namespace payloader
 #endif // OUTPUTWRITER_H_
