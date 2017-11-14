@@ -1,6 +1,6 @@
 #include "RtspReader.h"
 #include <sys/time.h>
-
+/*Clase encargada de la lectura via rtsp*/
 namespace payloader {
 
 DEFINE_LOGGER(RtspReader, "RtspReader");
