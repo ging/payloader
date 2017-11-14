@@ -58,6 +58,7 @@ class sender_rtsp : public RtpReceiver {
 		    AVStream *video_st;
 		    AVCodec *video_codec;
 		    int ret = 0, frameCount = 0;
+		    const char *url;
 
 			/* video output */
 			static AVFrame *frame;
