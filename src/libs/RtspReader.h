@@ -31,6 +31,7 @@ class RtspReader {
 
 	private:
 	    AVFormatContext* av_context_;
+	   	AVCodecContext *pCodecCtx;
 	    std::string input_url_;
 	    const char *input_device_;
 	    std::queue<AVPacket> packet_queue_;
@@ -38,7 +39,7 @@ class RtspReader {
 	    PacketReceiver* sink_;
 	    int video_stream_index_;
 	    int audio_stream_index_;
-	    AVCodecContext *pCodecCtx;
+
 
 	    boost::mutex queue_mutex_;
 		boost::thread deliver_thread_;

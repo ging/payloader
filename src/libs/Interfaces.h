@@ -18,6 +18,7 @@ public:
 	virtual void receivePacket(AVPacket& packet, AVMediaType type) = 0;
 	virtual int init(AVCodecContext *pCodecCtx) = 0;
 	virtual void setSink(FrameReceiver* receiver) = 0;
+	virtual void sendPacket(AVPacket *pkt) = 0;
 	//virtual void setSink(PacketReceiver* receiver) = 0;
 	virtual ~PacketReceiver() {}
 };

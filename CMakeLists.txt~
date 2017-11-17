@@ -41,8 +41,12 @@ include_directories("${CMAKE_CURRENT_SOURCE_DIR}/src/libs/")
 #file(GLOB_RECURSE SOURCES_PROT4REC "${CMAKE_CURRENT_SOURCE_DIR}/src/libs/*.h" "${CMAKE_CURRENT_SOURCE_DIR}/src/libs/*.c" "${CMAKE_CURRENT_SOURCE_DIR}/src/libs/*.cpp" "${CMAKE_CURRENT_SOURCE_DIR}/src/libs/*.cc" "${CMAKE_CURRENT_SOURCE_DIR}/src/prototype4_rec.cpp")
 #add_executable(prototype4_rec ${SOURCES_PROT4REC})
 
-file(GLOB_RECURSE SOURCES_PROT4REC "${CMAKE_CURRENT_SOURCE_DIR}/src/libs/*.h" "${CMAKE_CURRENT_SOURCE_DIR}/src/libs/*.c" "${CMAKE_CURRENT_SOURCE_DIR}/src/libs/*.cpp" "${CMAKE_CURRENT_SOURCE_DIR}/src/libs/*.cc" "${CMAKE_CURRENT_SOURCE_DIR}/src/prototype4_rec_rtsp.cpp")
-add_executable(prototype4_rec_rtsp ${SOURCES_PROT4REC})
+#file(GLOB_RECURSE SOURCES_PROT4REC "${CMAKE_CURRENT_SOURCE_DIR}/src/libs/*.h" "${CMAKE_CURRENT_SOURCE_DIR}/src/libs/*.c" "${CMAKE_CURRENT_SOURCE_DIR}/src/libs/*.cpp" "${CMAKE_CURRENT_SOURCE_DIR}/src/libs/*.cc" "${CMAKE_CURRENT_SOURCE_DIR}/src/prototype4_rec_rtsp.cpp")
+#add_executable(prototype4_rec_rtsp ${SOURCES_PROT4REC})
+
+file(GLOB_RECURSE SOURCES_PROT4REC "${CMAKE_CURRENT_SOURCE_DIR}/src/libs/*.h" "${CMAKE_CURRENT_SOURCE_DIR}/src/libs/*.c" "${CMAKE_CURRENT_SOURCE_DIR}/src/libs/*.cpp" "${CMAKE_CURRENT_SOURCE_DIR}/src/libs/*.cc" "${CMAKE_CURRENT_SOURCE_DIR}/src/prototype4_send_rtsp.cpp")
+add_executable(prototype4_send_rtsp ${SOURCES_PROT4REC})
+
 
 
 # GLIB

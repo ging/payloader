@@ -2,10 +2,12 @@
 #include <libavutil/time.h>
 
 #include "libs/InputReader.h"
+#include "libs/RtspReader_fromDisk.h"
 #include "libs/Packager.h"
 #include "libs/Decoder.h"
 #include "libs/Encoder.h"
 #include "libs/Sender.h"
+#include "libs/SenderRtsp.h"
 #include "libs/Codecs.h"
 
 int main(int argc, const char* argv[]) {
@@ -23,12 +25,12 @@ int main(int argc, const char* argv[]) {
     const char *input = argv[1];
     const char *device = argv[2];
 
-	payloader::InputReader* reader = new payloader::InputReader(input, device);
-	payloader::Packager* packager = new payloader::Packager();
-	payloader::Decoder* decoder = new payloader::Decoder();
-	payloader::Encoder* encoder = new payloader::Encoder();
-	payloader::Sender* sender = new payloader::Sender("localhost", "3001");
-	payloader::SenderRtsp* sender_rtsp = new payloader::SenderRtsp(input_file,NULL);
+	payloader::RtspReader_fromDisk* reader = new payloader::RtspReader_fromDisk(input, device);
+	//payloader::Packager* packager = new payloader::Packager();
+	//payloader::Decoder* decoder = new payloader::Decoder();
+	// payloader::Encoder* encoder = new payloader::Encoder();
+	// payloader::Sender* sender = new payloader::Sender("localhost", "3001");
+	payloader::SenderRtsp* sender_rtsp = new payloader::SenderRtsp();
 
 
 	payloader::VideoCodecInfo mp4Info;
@@ -61,8 +63,8 @@ int main(int argc, const char* argv[]) {
     lheInfo.bitRate = 48000;
 
     // common
-	packager->init();
-	sender->init();
+	//packager->init();
+	sender->init(NULL);
 
 
 	// 4a sin transcodificación

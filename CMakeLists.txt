@@ -41,8 +41,12 @@ include_directories("${CMAKE_CURRENT_SOURCE_DIR}/src/libs/")
 #file(GLOB_RECURSE SOURCES_PROT4REC "${CMAKE_CURRENT_SOURCE_DIR}/src/libs/*.h" "${CMAKE_CURRENT_SOURCE_DIR}/src/libs/*.c" "${CMAKE_CURRENT_SOURCE_DIR}/src/libs/*.cpp" "${CMAKE_CURRENT_SOURCE_DIR}/src/libs/*.cc" "${CMAKE_CURRENT_SOURCE_DIR}/src/prototype4_rec.cpp")
 #add_executable(prototype4_rec ${SOURCES_PROT4REC})
 
-file(GLOB_RECURSE SOURCES_PROT4REC "${CMAKE_CURRENT_SOURCE_DIR}/src/libs/*.h" "${CMAKE_CURRENT_SOURCE_DIR}/src/libs/*.c" "${CMAKE_CURRENT_SOURCE_DIR}/src/libs/*.cpp" "${CMAKE_CURRENT_SOURCE_DIR}/src/libs/*.cc" "${CMAKE_CURRENT_SOURCE_DIR}/src/prototype4_rec_rtsp.cpp")
-add_executable(prototype4_rec_rtsp ${SOURCES_PROT4REC})
+#file(GLOB_RECURSE SOURCES_PROT4REC "${CMAKE_CURRENT_SOURCE_DIR}/src/libs/*.h" "${CMAKE_CURRENT_SOURCE_DIR}/src/libs/*.c" "${CMAKE_CURRENT_SOURCE_DIR}/src/libs/*.cpp" "${CMAKE_CURRENT_SOURCE_DIR}/src/libs/*.cc" "${CMAKE_CURRENT_SOURCE_DIR}/src/prototype4_rec_rtsp.cpp")
+#add_executable(prototype4_rec_rtsp ${SOURCES_PROT4REC})
+
+file(GLOB_RECURSE SOURCES_PROT4REC "${CMAKE_CURRENT_SOURCE_DIR}/src/libs/*.h" "${CMAKE_CURRENT_SOURCE_DIR}/src/libs/*.c" "${CMAKE_CURRENT_SOURCE_DIR}/src/libs/*.cpp" "${CMAKE_CURRENT_SOURCE_DIR}/src/libs/*.cc" "${CMAKE_CURRENT_SOURCE_DIR}/src/prototype4_send_rtsp.cpp")
+add_executable(prototype4_send_rtsp ${SOURCES_PROT4REC})
+
 
 
 # GLIB
@@ -150,9 +154,15 @@ message("Libs ${GTHREAD} ${SSL} ${CRYPTO} ${LIBS} ${LOG}")
 #target_link_libraries(prototype4_send ${Boost_LIBRARIES})
 #target_link_libraries(prototype4_send ${GTHREAD} ${SSL} ${CRYPTO} ${BZ2} ${AVRESAMP} ${LZMA} ${MATH} ${ZLIB} ${LIBS} ${LX11} ${LVA} ${LVADRM} ${LVAx11} ${LVDPAU} ${LOG} ${XCB} ${XEXT} ${ASOUND} ${XV} ${VDPAU} ${XCBFI} ${XCBSHAPE} ${XCBSHM} ${SDL} ${SWSCALE} ${OpenCV_LIBS})
 
-target_link_libraries(prototype4_rec_rtsp ${GLIB_LIBRARIES})
-target_link_libraries(prototype4_rec_rtsp ${Boost_LIBRARIES})
-target_link_libraries(prototype4_rec_rtsp ${GTHREAD} ${SSL} ${CRYPTO} ${BZ2} ${AVRESAMP} ${LZMA} ${MATH} ${ZLIB} ${LIBS} ${LX11} ${LVA} ${LVADRM} ${LVAx11} ${LVDPAU} ${LOG} ${XCB} ${XEXT} ${ASOUND} ${XV} ${VDPAU} ${XCBFI} ${XCBSHAPE} ${XCBSHM} ${SDL} ${SWSCALE} ${OpenCV_LIBS})
+#target_link_libraries(prototype4_rec_rtsp ${GLIB_LIBRARIES})
+#target_link_libraries(prototype4_rec_rtsp ${Boost_LIBRARIES})
+#target_link_libraries(prototype4_rec_rtsp ${GTHREAD} ${SSL} ${CRYPTO} ${BZ2} ${AVRESAMP} ${LZMA} ${MATH} ${ZLIB} ${LIBS} ${LX11} ${LVA} ${LVADRM} ${LVAx11} ${LVDPAU} ${LOG} ${XCB} ${XEXT} ${ASOUND} ${XV} ${VDPAU} ${XCBFI} ${XCBSHAPE} ${XCBSHM} ${SDL} ${SWSCALE} ${OpenCV_LIBS})
+
+target_link_libraries(prototype4_send_rtsp ${GLIB_LIBRARIES})
+target_link_libraries(prototype4_send_rtsp ${Boost_LIBRARIES})
+target_link_libraries(prototype4_send_rtsp ${GTHREAD} ${SSL} ${CRYPTO} ${BZ2} ${AVRESAMP} ${LZMA} ${MATH} ${ZLIB} ${LIBS} ${LX11} ${LVA} ${LVADRM} ${LVAx11} ${LVDPAU} ${LOG} ${XCB} ${XEXT} ${ASOUND} ${XV} ${VDPAU} ${XCBFI} ${XCBSHAPE} ${XCBSHM} ${SDL} ${SWSCALE} ${OpenCV_LIBS})
+
+
 
 
 # check lib dependencies pkg-config --libs libavdevice

@@ -11,27 +11,31 @@
 #include "logger.h"
 #include <queue>
 
+#include <iostream>
+#include <ctime>
+#include <ratio>
 
+#include <chrono>
 #include <thread>
-#include <tchar.h>
+//#include <tchar.h>
 
-extern "C"
-{
-    #include <libavcodec\avcodec.h>
-    #include <libavformat\avformat.h>
-    #include <libavformat\avio.h>
-    #include <libswscale\swscale.h>
-    #include <libavutil\time.h>
-}
+// extern "C"
+// {
+//     #include <libavcodec\avcodec.h>
+//     #include <libavformat\avformat.h>
+//     #include <libavformat\avio.h>
+//     #include <libswscale\swscale.h>
+//     #include <libavutil\time.h>
+// }
 
-#pragma comment(lib,"libavformat/libavformat.a")
-#pragma comment(lib,"libavcodec/libavcodec.a")
-#pragma comment(lib,"libavutil/libavutil.a")
-#pragma comment(lib,"libswscale/libswscale.a")
-#pragma comment(lib,"x264.lib")
-#pragma comment(lib,"libswresample/libswresample.a")
+// #pragma comment(lib,"libavformat/libavformat.a")
+// #pragma comment(lib,"libavcodec/libavcodec.a")
+// #pragma comment(lib,"libavutil/libavutil.a")
+// #pragma comment(lib,"libswscale/libswscale.a")
+// #pragma comment(lib,"x264.lib")
+// #pragma comment(lib,"libswresample/libswresample.a")
 
-//using namespace std;
+using namespace std;
 
 
 #define STREAM_DURATION   20
@@ -41,16 +45,18 @@ extern "C"
 
 namespace payloader {
 
-class sender_rtsp : public RtpReceiver {
+class SenderRtsp : public RtpReceiver {
     DECLARE_LOGGER();
 	public:
-	    Sender(const std::string& url, const std::string& port);
-	    virtual ~Sender();
-	    int init();
-	    void receiveRtpPacket(unsigned char* inBuff, int buffSize);
+	  	SenderRtsp();
+	    virtual ~SenderRtsp();
+	    void init( char *url);
+		void sendPacket(AVPacket* packet );
+		void receiveRtpPacket(unsigned char* inBuff, int buffSize);
+		//int write_video_frame(AVFormatContext *oc, int frameCount, AVPacket *pkt);
 
 	private:
-		struct dataPacket{
+	
 		    char data[1500];
 		    int length;
 		    
@@ -66,23 +72,8 @@ class sender_rtsp : public RtpReceiver {
 
 			static int video_is_eof;	
 
-		};
+	
 
-		boost::scoped_ptr<boost::asio::ip::udp::socket> socket_;
-		boost::scoped_ptr<boost::asio::ip::udp::resolver> resolver_;
-
-		boost::scoped_ptr<boost::asio::ip::udp::resolver::query> query_;
-		boost::asio::ip::udp::resolver::iterator iterator_;
-		boost::asio::io_service io_service_;
-
-		boost::thread send_Thread_;
-		boost::condition_variable cond_;
-		boost::mutex queueMutex_;
-		std::queue<dataPacket> sendQueue_;
-		bool sending_;
-
-		void sendLoop();
-		int sendData(char* buffer, int len);
 
 
 };
