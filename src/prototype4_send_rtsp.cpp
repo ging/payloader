@@ -1,12 +1,12 @@
 #include <stdio.h>
 #include <libavutil/time.h>
 
-#include "libs/InputReader.h"
+
 #include "libs/RtspReader_fromDisk.h"
-#include "libs/Packager.h"
+
 #include "libs/Decoder.h"
 #include "libs/Encoder.h"
-#include "libs/Sender.h"
+
 #include "libs/SenderRtsp.h"
 #include "libs/Codecs.h"
 
@@ -64,7 +64,7 @@ int main(int argc, const char* argv[]) {
 
     // common
 	//packager->init();
-	sender->init(NULL);
+	sender_rtsp->init(NULL);
 
 
 	// 4a sin transcodificación

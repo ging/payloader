@@ -13,20 +13,24 @@ public:
 	virtual ~FrameReceiver() {}
 };
 
+
+class RtpReceiver {
+public:
+	virtual void receiveRtpPacket(unsigned char* inBuff, int buffSize) = 0;
+	virtual void sendPacket(AVPacket* pkt) = 0;
+	virtual ~RtpReceiver() {}
+};
+
+
 class PacketReceiver {
 public:
 	virtual void receivePacket(AVPacket& packet, AVMediaType type) = 0;
 	virtual int init(AVCodecContext *pCodecCtx) = 0;
 	virtual void setSink(FrameReceiver* receiver) = 0;
+	virtual void setSink(RtpReceiver* receiver) = 0;
 	virtual void sendPacket(AVPacket *pkt) = 0;
 	//virtual void setSink(PacketReceiver* receiver) = 0;
 	virtual ~PacketReceiver() {}
-};
-
-class RtpReceiver {
-public:
-	virtual void receiveRtpPacket(unsigned char* inBuff, int buffSize) = 0;
-	virtual ~RtpReceiver() {}
 };
 
 }	// Namespace payloader

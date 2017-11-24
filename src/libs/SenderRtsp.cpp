@@ -1,6 +1,5 @@
-// Roughly based on: https://ffmpeg.org/doxygen/trunk/muxing_8c-source.html
-
 #include "SenderRtsp.h"
+
 namespace payloader {
 
 DEFINE_LOGGER(SenderRtsp, "SenderRtsp");
@@ -52,9 +51,9 @@ SenderRtsp::~SenderRtsp() {
 //     return st;
 // }
 
- void receiveRtpPacket(unsigned char* inBuff, int buffSize){
-    return;
-}
+//  void receiveRtpPacket(unsigned char* inBuff, int buffSize){
+//     return;
+// }
 
 
 // static int write_video_frame(AVFormatContext *oc, int frameCount, AVPacket *pkt)

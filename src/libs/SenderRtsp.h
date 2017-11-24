@@ -14,7 +14,6 @@
 #include <iostream>
 #include <ctime>
 #include <ratio>
-
 #include <chrono>
 #include <thread>
 //#include <tchar.h>
@@ -51,8 +50,8 @@ class SenderRtsp : public RtpReceiver {
 	  	SenderRtsp();
 	    virtual ~SenderRtsp();
 	    void init( char *url);
+	    void receiveRtpPacket(unsigned char* inBuff, int buffSize);
 		void sendPacket(AVPacket* packet );
-		void receiveRtpPacket(unsigned char* inBuff, int buffSize);
 		//int write_video_frame(AVFormatContext *oc, int frameCount, AVPacket *pkt);
 
 	private:

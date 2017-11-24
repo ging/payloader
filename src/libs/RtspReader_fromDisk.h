@@ -27,7 +27,7 @@ class RtspReader_fromDisk {
 	    RtspReader_fromDisk(const std::string& url, const char *device);
 	    virtual ~RtspReader_fromDisk();
 	    int init();
-	    void setSink(PacketReceiver* receiver);
+	    void setSink( RtpReceiver* receiver);
 
 	private:
 		AVFormatContext *outContext;
@@ -37,7 +37,7 @@ class RtspReader_fromDisk {
 	    const char *input_device_;
 	    std::queue<AVPacket> packet_queue_;
 	    bool reading_;
-	    PacketReceiver* sink_;
+		RtpReceiver* sink_;
 	    int video_stream_index_;
 	    int audio_stream_index_;
 
