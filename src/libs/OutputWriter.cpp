@@ -26,7 +26,7 @@ OutputWriter::~OutputWriter() {
 }
 int OutputWriter::init(AVCodecContext *pCodecCtx) {
 
-av_register_all();
+  av_register_all();
   avcodec_register_all();
 
   av_context_ = avformat_alloc_context();
@@ -36,6 +36,7 @@ av_register_all();
   }
 
   output_url_.copy(av_context_->filename, sizeof(av_context_->filename), 0);
+
   av_context_->oformat = av_guess_format(NULL,  av_context_->filename, NULL);
   if (!av_context_->oformat) {
     ELOG_ERROR("Error guessing format %s", av_context_->filename);

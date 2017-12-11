@@ -12,7 +12,7 @@
 
 int main(int argc, const char* argv[]) {
 
-	if (argc != 3) {
+	if (argc != 2) {
         printf("usage: %s input\n device"
                "Example program to input-output media to UDP.\n"
                "\n", argv[0]);
@@ -23,14 +23,18 @@ int main(int argc, const char* argv[]) {
     // camera: /dev/video0 vfwcap
     // desktop :0.0 x11grab
     const char *input = argv[1];
-    const char *device = argv[2];
+    const char *destine = argv[2];
+    const char *device = NULL;
+    //const char *output = "rtsp://138.4.7.72:8554/ej";
+    const char *output = "prueba_a_disco.avi";
+
 
 	payloader::RtspReader_fromDisk* reader = new payloader::RtspReader_fromDisk(input, device);
 	//payloader::Packager* packager = new payloader::Packager();
 	//payloader::Decoder* decoder = new payloader::Decoder();
 	// payloader::Encoder* encoder = new payloader::Encoder();
 	// payloader::Sender* sender = new payloader::Sender("localhost", "3001");
-	payloader::SenderRtsp* sender_rtsp = new payloader::SenderRtsp();
+	payloader::SenderRtsp* sender_rtsp = new payloader::SenderRtsp(output);
 
 
 	payloader::VideoCodecInfo mp4Info;
@@ -64,7 +68,7 @@ int main(int argc, const char* argv[]) {
 
     // common
 	//packager->init();
-	sender_rtsp->init(NULL);
+		
 
 
 	// 4a sin transcodificación

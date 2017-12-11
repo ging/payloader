@@ -1,173 +1,127 @@
 #include "SenderRtsp.h"
+#include <sys/time.h>
 
 namespace payloader {
 
 DEFINE_LOGGER(SenderRtsp, "SenderRtsp");
 
-SenderRtsp::SenderRtsp() {
-    ELOG_DEBUG("Creating sender");
-    //outContext = NULL;
+SenderRtsp::SenderRtsp(const std::string& url) : output_url_(url)  {
+    ELOG_DEBUG("Creating source sender to %s", output_url_.c_str());
+    outContext = NULL;
 }
 
 SenderRtsp::~SenderRtsp() {
-    // deliver_thread_.join();
-  //  avformat_close_input(&av_context_);
+    if (outContext != NULL) {
+      av_write_trailer(outContext);
+  }
+
+  if (outContext != NULL) {
+      avio_close(outContext->pb);
+      avformat_free_context(outContext);
+      outContext = NULL;
+  }
 }
 
 
-// /* Add an output stream. */
-// static AVStream *add_stream(AVFormatContext *oc, AVCodec **codec, enum AVCodecID codec_id) // DEBEMOS HACER ESTO AQUI ¿ O ENCODER?
-// {
-//     AVCodecContext *c;
-//     AVStream *st;
-
-//     /* find the encoder */
-//     *codec = avcodec_find_encoder(codec_id);
-//     if (!(*codec)) {
-//         av_log(NULL, AV_LOG_ERROR, "Could not find encoder for '%s'.\n", avcodec_get_name(codec_id));
-//     }
-//     else {
-//         st = avformat_new_stream(oc, *codec);
-//         if (!st) {
-//             av_log(NULL, AV_LOG_ERROR, "Could not allocate stream.\n");
-//         }
-//         else {
-//             st->id = oc->nb_streams - 1;//Queda un frame menos
-//             st->time_base.den = st->pts.den = 90000;
-//             st->time_base.num = st->pts.num = 1;
-
-//             c = st->codec;
-//             c->codec_id = codec_id;
-//             c->bit_rate = 400000;
-//             c->width = 352;
-//             c->height = 288;
-//             c->time_base.den = STREAM_FRAME_RATE;
-//             c->time_base.num = 1;
-//             c->gop_size = 12; /* emit one intra frame every twelve frames at most */
-//             c->pix_fmt = STREAM_PIX_FMT;
-//         }
-//     }
-
-//     return st;
-// }
-
-//  void receiveRtpPacket(unsigned char* inBuff, int buffSize){
-//     return;
-// }
-
-
-// static int write_video_frame(AVFormatContext *oc, int frameCount, AVPacket *pkt)
-// {
-//     int ret = 0;
-  
-//    // AVCodecContext *c = st->codec;
-
-//     /* encode the image */ //AQUI HACE LO QUE TIENE QUE HACER EL ENCODER pero lo hace el input reader
-//    // frame->pts = frameCount;
-
-//    // if (got_packet) {
-//       //  pkt.stream_index = st->index;
-//       //  pkt.pts = av_rescale_q_rnd(pkt.pts, c->time_base, oc->streams->time_base, AVRounding(AV_ROUND_NEAR_INF | AV_ROUND_PASS_MINMAX));
-//         ret = av_write_frame(oc, &pkt);// Manda el frame
-//          if (ret < 0) {
-//                 av_log(NULL, AV_LOG_ERROR, "Error while writing video frame.\n");
-//          }
-//    // }
-    
-
-//     return ret;// paquete con el frame
-// }
-
-void SenderRtsp::init( char *url ){
-
-    printf("starting...\n");
-
-    //const char *url = "rtsp://rtsp://138.4.13.92:8554/ej";
-    //const char *url = "rtsp://192.168.33.19:1935/ffmpeg/0";
-
+int SenderRtsp::init(AVCodecContext *pCodecCtx){
 
     av_log_set_level(AV_LOG_DEBUG);
-    //av_log_set_level(AV_LOG_TRACE);
+    av_log_set_level(AV_LOG_TRACE);
+
+    ELOG_DEBUG("starting sender...\n");
 
     av_register_all();
+    avcodec_register_all();
     avformat_network_init();
 
-   avformat_alloc_output_context2(&outContext, NULL, "rtsp", url); //Asignamos contexto de SALIDA
+   // static const char* output_url_formats[] = { NULL, "mp3", "ogg", "avi", "rtsp" };
 
-    if (!outContext) {
-        av_log(NULL, AV_LOG_FATAL, "Could not allocate an output context for '%s'.\n", url);
-        //goto end;
+    
+    outContext = avformat_alloc_context();
+    if (outContext == NULL) {
+        ELOG_ERROR("Error allocating memory for IO context");
+    return -1;   
+    }else{
+         ELOG_DEBUG("Allocated an output_url_ context for %s .\n", output_url_.c_str());
+       //  goto end;
     }
 
-    if (!outContext->oformat) {
-        av_log(NULL, AV_LOG_FATAL, "Could not create the output format for '%s'.\n", url);
-        //goto end;
+    output_url_.copy(outContext->filename, sizeof(outContext->filename), 0);
+
+    outContext->oformat = av_guess_format(NULL,  outContext->filename, NULL);
+        if (!outContext->oformat) {
+            ELOG_ERROR("Error guessing format %s", outContext->filename);
+    return -1;
     }
 
-    av_dump_format(outContext, 0, url, 1);
-   
+    ret = avio_open2(&outContext->pb, outContext->filename, AVIO_FLAG_WRITE, NULL, NULL);
+    if (ret < 0) {
+        av_log(NULL, AV_LOG_FATAL, "Could not open output_url_ file to write to it.\n");
+    
+    }else{
+         ELOG_DEBUG("Opened output file.\n");
+    }
+
+    AVOutputFormat* fmt = NULL;
+    fmt = av_guess_format(NULL, output_url_.c_str(), NULL);
+    if (!fmt) {
+        outContext->oformat->video_codec = AV_CODEC_ID_MPEG4;
+        av_log(NULL, AV_LOG_FATAL, "Could not find file format of detached audio.\n");
+        ELOG_DEBUG("Asignado formato AV_CODEC_ID_MPEG4 por defecto. ")
+    
+    }else{
+        outContext->oformat = fmt;
+        ELOG_DEBUG("Asignado formato encontrado por guess.")
+    }
+
+    // Video track
+    AVCodec* videoCodec = avcodec_find_encoder(outContext->oformat->video_codec);
+    if (videoCodec == NULL) {
+      ELOG_ERROR("Could not find video codec");
+      return -1;
+    }
+
+    video_stream_ = avformat_new_stream(outContext, videoCodec);
+    video_stream_->id = 0;
+    video_stream_->time_base = (AVRational) { 1, 25 };
+    video_stream_->codecpar->codec_type = AVMEDIA_TYPE_VIDEO;
+    video_stream_->codecpar->codec_id = outContext->oformat->video_codec;
+    video_stream_->codecpar->width = pCodecCtx->width;
+    video_stream_->codecpar->height = pCodecCtx->height;
+    video_stream_->codecpar->format = AV_PIX_FMT_YUV420P;
+
+    outContext->streams[0] = video_stream_;
+  
     ret = avformat_write_header(outContext, NULL);
     if (ret != 0) {
-        av_log(NULL, AV_LOG_ERROR, "Failed to connect to RTSP server for '%s'.\n", url);
+        av_log(NULL, AV_LOG_ERROR, "Failed to connect to RTSP server for %s.\n",output_url_.c_str());
         //goto end;
+    }else{
+         ELOG_DEBUG("Conected to RTSP server for '%s'.\n", output_url_.c_str());
     }
 
-  //  sendFrame(outContext,video_st);
-
-    return;
+return 1;
+}
+void SenderRtsp::receiveRtpPacket(unsigned char* inBuff, int buffSize){
+return;
 }
 
-void SenderRtsp::sendPacket(AVPacket* pkt){
 
-    printf("Press any key to start streaming...\n");
-    getchar();
+void SenderRtsp::sendPacket(AVPacket& pkt){
 
-    auto startSend = std::chrono::system_clock::now();
+    ELOG_DEBUG("Press any key to start streaming...\n");
+    //getchar();
 
-    while (pkt) {
-        frameCount++;
-        auto startFrame = std::chrono::system_clock::now();
+    ELOG_DEBUG("Stream video %d", outContext->streams[0]->id);
+    ELOG_DEBUG("Trying to send packet of %d bytes", pkt.size);
 
-        // ret = write_video_frame(outContext, frameCount, *pkt);
 
-        // if (ret < 0) {
-        //     av_log(NULL, AV_LOG_ERROR, "Write video frame failed -- Send pkt failed.\n", url);
-        //     goto end;
-        // }
-
-        ret = av_write_frame(outContext, pkt);// Manda el frame
-         if (ret < 0) {
-                av_log(NULL, AV_LOG_ERROR, "Error while writing video frame.\n");
-         }
-
-        auto streamDuration = std::chrono::duration_cast<chrono::milliseconds>(std::chrono::system_clock::now() - startSend).count();
-
-       // printf("Elapsed time %ldms, video stream pts %ld.\n", streamDuration, video_st->pts.val);
-
-        if (streamDuration / 1000.0 > STREAM_DURATION) {
-            break;
-        }
-        else {
-            auto frameDuration = std::chrono::duration_cast<chrono::milliseconds>(std::chrono::system_clock::now() - startFrame).count();
-            std::this_thread::sleep_for(std::chrono::milliseconds((long)(1000.0 / STREAM_FRAME_RATE - frameDuration)));
-        }
+    ret = av_interleaved_write_frame(outContext, &pkt);// Manda el paquete
+    if (ret < 0) {
+        av_log(NULL, AV_LOG_ERROR, "Error while writing video packet.\n");
     }
-
-    // if (video_st) {
-    //     avcodec_close(video_st->codec);
-    //     av_free(src_picture.data[0]);
-    //     av_free(dst_picture.data[0]);
-    //     av_frame_free(&frame);
-    // }
-
-    avformat_free_context(outContext);
-
-end:
-    printf("finished.\n");
-
-    getchar();
 }
-
 
 
 }   // Namespace payloader
+

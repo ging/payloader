@@ -31,7 +31,7 @@ class RtspReader_fromDisk {
 
 	private:
 		AVFormatContext *outContext;
-	    AVFormatContext* av_context_;
+	    AVFormatContext *av_context_;
 	   	AVCodecContext *pCodecCtx;
 	    std::string input_url_;
 	    const char *input_device_;

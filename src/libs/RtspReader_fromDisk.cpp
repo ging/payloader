@@ -1,9 +1,11 @@
 #include "RtspReader_fromDisk.h"
 #include <sys/time.h>
+#include "SenderRtsp.h"
+
 /*Clase encargada de la lectura via rtsp*/
 namespace payloader {
 
-DEFINE_LOGGER(RtspReader_fromDisk, "RtspReader");
+DEFINE_LOGGER(RtspReader_fromDisk, "RtspReader_fromDisk");
 
 RtspReader_fromDisk::RtspReader_fromDisk(const std::string& url, const char *device) : input_url_(url), input_device_(device) {
     ELOG_DEBUG("Creating source reader to %s", url.c_str());
@@ -67,6 +69,7 @@ int RtspReader_fromDisk::init(){
 
     // deliver_thread_ = boost::thread(&InputReader::deliverLoop, this);
 
+    
     this->startReading();
 
     return true;
@@ -80,10 +83,11 @@ void RtspReader_fromDisk::setSink(RtpReceiver* receiver) {
 
 void RtspReader_fromDisk::startReading() {
     
+    //sink_->init();
     AVPacket avpacket_;
     avpacket_.data = NULL;
     //Aquí tenemos que conseguir pasarle al decoder este pCodecCtx
-    //sink_->init(pCodecCtx);
+    sink_->init(pCodecCtx);
 
     reading_ = true;
 
@@ -99,7 +103,7 @@ void RtspReader_fromDisk::startReading() {
             else if (avpacket_.stream_index == audio_stream_index_)
                 type = AVMEDIA_TYPE_AUDIO;
 
-            sink_->sendPacket(&avpacket_);
+            sink_->sendPacket(avpacket_);
 
         }
 
