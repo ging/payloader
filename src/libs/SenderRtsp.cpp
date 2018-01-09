@@ -32,47 +32,57 @@ int SenderRtsp::init(AVCodecContext *pCodecCtx){
 
     av_register_all();
     avcodec_register_all();
-    avformat_network_init();
+    avformat_network_init();//RTP
 
    // static const char* output_url_formats[] = { NULL, "mp3", "ogg", "avi", "rtsp" };
 
     
+    // outContext = avformat_alloc_context();
+    // if (outContext == NULL) {
+    //     ELOG_ERROR("Error allocating memory for IO context");
+    // return -1;   
+    // }else{
+    //      ELOG_DEBUG("Allocated an output_url_ context for %s .\n", output_url_.c_str());
+    //    //  goto end;
+    // }
+    //output_url_.copy(outContext->filename, sizeof(outContext->filename), 0);
+
+    AVOutputFormat* outputfmt = NULL;
+    outputfmt = av_guess_format("rtsp",NULL, NULL);
+     if (!outputfmt) {
+        ELOG_ERROR("Error guessing format %s", output_url_.c_str());
+    }
+
     outContext = avformat_alloc_context();
-    if (outContext == NULL) {
-        ELOG_ERROR("Error allocating memory for IO context");
-    return -1;   
-    }else{
-         ELOG_DEBUG("Allocated an output_url_ context for %s .\n", output_url_.c_str());
-       //  goto end;
+
+    ret = avformat_alloc_output_context2(&outContext, outputfmt, "rtsp", output_url_.c_str());
+    if (!outContext) {
+        av_log(NULL, AV_LOG_FATAL, "Could not allocate output format context.\n");
+        return -1;
     }
 
-    output_url_.copy(outContext->filename, sizeof(outContext->filename), 0);
-
-    outContext->oformat = av_guess_format(NULL,  outContext->filename, NULL);
-        if (!outContext->oformat) {
-            ELOG_ERROR("Error guessing format %s", outContext->filename);
-    return -1;
-    }
-
-    ret = avio_open2(&outContext->pb, outContext->filename, AVIO_FLAG_WRITE, NULL, NULL);
-    if (ret < 0) {
-        av_log(NULL, AV_LOG_FATAL, "Could not open output_url_ file to write to it.\n");
-    
-    }else{
-         ELOG_DEBUG("Opened output file.\n");
-    }
-
-    AVOutputFormat* fmt = NULL;
-    fmt = av_guess_format(NULL, output_url_.c_str(), NULL);
-    if (!fmt) {
+   
+    if (!outputfmt) {
         outContext->oformat->video_codec = AV_CODEC_ID_MPEG4;
         av_log(NULL, AV_LOG_FATAL, "Could not find file format of detached audio.\n");
         ELOG_DEBUG("Asignado formato AV_CODEC_ID_MPEG4 por defecto. ")
     
     }else{
-        outContext->oformat = fmt;
+        outContext->oformat = outputfmt;
         ELOG_DEBUG("Asignado formato encontrado por guess.")
     }
+
+    /* open the output file, if needed */ 
+    if (!(outputfmt->flags & AVFMT_NOFILE))
+        ret = avio_open(&outContext->pb, output_url_.c_str(), AVIO_FLAG_WRITE);
+         if (ret < 0) {
+             av_log(NULL, AV_LOG_FATAL, "Could not open output_url_ file to write to it.\n");
+    
+            }else{
+                 ELOG_DEBUG("Opened output file.\n");
+            }
+
+  
 
     // Video track
     AVCodec* videoCodec = avcodec_find_encoder(outContext->oformat->video_codec);
@@ -109,7 +119,7 @@ return;
 
 void SenderRtsp::sendPacket(AVPacket& pkt){
 
-    ELOG_DEBUG("Press any key to start streaming...\n");
+    //ELOG_DEBUG("Press any key to start streaming...\n");
     //getchar();
 
     ELOG_DEBUG("Stream video %d", outContext->streams[0]->id);

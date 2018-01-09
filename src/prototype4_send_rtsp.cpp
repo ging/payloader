@@ -25,8 +25,8 @@ int main(int argc, const char* argv[]) {
     const char *input = argv[1];
     const char *destine = argv[2];
     const char *device = NULL;
-    //const char *output = "rtsp://138.4.7.72:8554/ej";
-    const char *output = "prueba_a_disco.avi";
+    const char *output = "rtsp://138.4.7.72:8550/ej/video_2.avi";
+   	//const char *output = "prueba_a_disco.avi";
 
 
 	payloader::RtspReader_fromDisk* reader = new payloader::RtspReader_fromDisk(input, device);
