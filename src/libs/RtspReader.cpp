@@ -13,7 +13,6 @@ RtspReader::RtspReader(const std::string& url, const char *device) : input_url_(
 }
 
 RtspReader::~RtspReader() {
-	// deliver_thread_.join();
 	avformat_close_input(&av_context_);
 }
 
@@ -59,14 +58,9 @@ int RtspReader::init(){
      // Get a pointer to the codec context for the video stream
 	pCodecCtx=av_context_->streams[video_stream_index_]->codec;
 
-    // int audio_codec = av_context_->streams[audio_stream_index_]->codecpar->codec_id;
-    // int video_codec = av_context_->streams[video_stream_index_]->codecpar->codec_id;
-    // ELOG_DEBUG("Audio codec %d, video codec %d", audio_codec, video_codec);
-
     ELOG_DEBUG("Video stream index %d, Audio Stream index %d", video_stream_index_, audio_stream_index_);
 
-    // deliver_thread_ = boost::thread(&InputReader::deliverLoop, this);
-
+   
     this->startReading();
 
     return true;
@@ -102,11 +96,6 @@ void RtspReader::startReading() {
 			sink_->receivePacket(avpacket_, type);
 
 		}
-
-		// queue_mutex_.lock();
-		// packet_queue_.push(avpacket_);
-		// queue_mutex_.unlock();
-
 	}
 
 	ELOG_DEBUG("Ended source reading");
@@ -115,28 +104,6 @@ void RtspReader::startReading() {
 }
 
 void RtspReader::deliverLoop() {
-	// while (reading_ == true) {
-	// 	queue_mutex_.lock();
-	// 	if (packet_queue_.size() > 0) {
-	// 		ELOG_DEBUG("Delivering packet %ld", packet_queue_.front().pts);
-
-	// 		AVMediaType type = AVMEDIA_TYPE_UNKNOWN;
-	// 		if (packet_queue_.front().stream_index == video_stream_index_)
-	// 			type = AVMEDIA_TYPE_VIDEO;
-	// 		else if (packet_queue_.front().stream_index == audio_stream_index_)
-	// 			type = AVMEDIA_TYPE_AUDIO;
-
-	// 	  	if (sink_ != NULL && packet_queue_.front().pts > 0) {
-	// 			sink_->receivePacket(packet_queue_.front(), type);
-	// 		}
-
-	// 	  	packet_queue_.pop();
-	// 	  	queue_mutex_.unlock();
-	// 	} else {
-	// 	  	queue_mutex_.unlock();
-	// 	  	usleep(DELIVERING_INTERVAL);
-	// 	}
-	// }
 }
 
 }	// Namespace payloader

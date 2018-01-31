@@ -30,8 +30,8 @@ class RtspReader_fromDisk {
 	    void setSink( RtpReceiver* receiver);
 
 	private:
-		AVFormatContext *outContext;
-	    AVFormatContext *av_context_;
+		AVFormatContext *ofmt_ctx;
+	    AVFormatContext *ifmt_ctx;
 	   	AVCodecContext *pCodecCtx;
 	    std::string input_url_;
 	    const char *input_device_;

@@ -45,32 +45,8 @@ if (argc != 3) {
 
     // common
 	writer->init({}, mp4Info);
-	//unpackager->init();
-	
-
-	// 4a sin transcodificación
-	// unpackager->setSink(writer);
-
-
-	// 4b con transcodificación
-	// encoder->init({}, mp4Info);
-	// decoder->init({}, lheInfo);
-	// unpackager->setSink(decoder);
-	// decoder->setSink(encoder);
-	// encoder->setSink(writer);
-
-	// 4d a display
-	//decoder->init({}, mp4Info);
-	//unpackager->setSink(decoder);
 	decoder->setSink(writer);
 
-	//
-	
-
-    // common
-	//receiver->setSink(unpackager);
 	receiver_rtsp->setSink(decoder);
-	//receiver->init();
 	receiver_rtsp->init();
-
 }

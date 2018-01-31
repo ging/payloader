@@ -64,9 +64,6 @@ int Decoder::init(AVCodecContext *pCodecCtx) {
               ELOG_DEBUG("Decoder opened");
         }
 
-        // vDecoderContext_->width = videoInfo.width;
-        // vDecoderContext_->height = videoInfo.height;
-
         vFrame_ = av_frame_alloc();
         if (!vFrame_) {
             ELOG_DEBUG("Error allocating video frame");
@@ -75,34 +72,6 @@ int Decoder::init(AVCodecContext *pCodecCtx) {
               ELOG_DEBUG("Video frame alocated: %d and %d ",  vDecoderContext_->width,  vDecoderContext_->height );
         }
 	}
-
-	// if (audioInfo.enabled) {
-	// 	aDecoder_ = avcodec_find_decoder(audioInfo.codec);
- //        if (!aDecoder_) {
- //            ELOG_DEBUG("Error getting audio decoder");
- //            return -1;
- //        }
-
- //        aDecoderContext_ = avcodec_alloc_context3(aDecoder_);
- //        if (!aDecoderContext_) {
- //            ELOG_DEBUG("Error getting allocating decoder context");
- //            return -1;
- //        }
-
- //        aDecoderContext_->sample_fmt = AV_SAMPLE_FMT_S16;
- //        aDecoderContext_->sample_rate = 48000;
- //        aDecoderContext_->channels = 2;
-
- //        if (avcodec_open2(aDecoderContext_, aDecoder_, NULL) < 0) {
- //            ELOG_DEBUG("Error opening audio decoder");
- //            return -1;
- //        }
- //        aFrame_ = av_frame_alloc();
- //        if (!aFrame_) {
- //            ELOG_DEBUG("Error allocating video frame");
- //            return -1;
- //        }
-	// }
 
     ELOG_DEBUG("Codec init finished")
     return true;
@@ -148,8 +117,6 @@ void Decoder::receivePacket(AVPacket& packet, AVMediaType type) {
 
             }
 
-        
-
     } else if (type == AVMEDIA_TYPE_AUDIO) {
         if (aDecoder_ == 0 || aDecoderContext_ == 0) {
           //  ELOG_DEBUG("Init Codec First AUDIO");
@@ -173,19 +140,10 @@ void Decoder::receivePacket(AVPacket& packet, AVMediaType type) {
                 ELOG_DEBUG("Error during decoding");
                 return;
             }
-            /* the stream parameters may change at any time, check that they are
-             * what we expect */
-            // if (av_get_channel_layout_nb_channels(aFrame_->channel_layout) != 2 ||
-            //     aFrame_->format != AV_SAMPLE_FMT_S16P) {
-            //     ELOG_DEBUG("Unsupported frame parameters");
-            //     return;
-            // }
             sink_->receiveFrame(aFrame_, AVMEDIA_TYPE_AUDIO);
         }
     }
 
 }
-
-
 
 }	// Namespace payloader

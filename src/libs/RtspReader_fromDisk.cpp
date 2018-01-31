@@ -9,31 +9,30 @@ DEFINE_LOGGER(RtspReader_fromDisk, "RtspReader_fromDisk");
 
 RtspReader_fromDisk::RtspReader_fromDisk(const std::string& url, const char *device) : input_url_(url), input_device_(device) {
     ELOG_DEBUG("Creating source reader to %s", url.c_str());
-    av_context_ = NULL;
+    ifmt_ctx = NULL;
     reading_ = false;
     sink_ = NULL;
 }
 
 RtspReader_fromDisk::~RtspReader_fromDisk() {
-    // deliver_thread_.join();
-    avformat_close_input(&av_context_);
+    avformat_close_input(&ifmt_ctx);
 }
 
 int RtspReader_fromDisk::init(){
     avformat_network_init();
     av_register_all();
     avdevice_register_all();
-    av_context_ = avformat_alloc_context();
+    char errbuff[500];
+    //ifmt_ctx = avformat_alloc_context();
 
-    AVInputFormat *a = NULL;
+    //Camara web...
+   /* AVInputFormat *a = NULL;
     if (input_device_ != NULL) {
         a = av_find_input_format(input_device_);
-    }
-
-    char errbuff[500];
+    }*/
 
     ELOG_DEBUG("Opening source %s", input_url_.c_str());
-    int res = avformat_open_input(&av_context_, input_url_.c_str(), a, NULL);
+    int res = avformat_open_input(&ifmt_ctx, input_url_.c_str(), 0, NULL);
     ELOG_DEBUG("Opening source result %d", res);
     if(res != 0){
         av_strerror(res, (char*)(&errbuff), 500);
@@ -42,7 +41,7 @@ int RtspReader_fromDisk::init(){
     }
 
     ELOG_DEBUG("Finding stream info");
-    res = avformat_find_stream_info(av_context_,NULL);
+    res = avformat_find_stream_info(ifmt_ctx,NULL);
     ELOG_DEBUG("Finding stream info result %d", res);
     if(res < 0){
       av_strerror(res, (char*)(&errbuff), 500);
@@ -50,26 +49,23 @@ int RtspReader_fromDisk::init(){
       return res;
     }
 
-    audio_stream_index_ = av_find_best_stream(av_context_, AVMEDIA_TYPE_AUDIO, -1, -1, NULL, 0);
+    audio_stream_index_ = av_find_best_stream(ifmt_ctx, AVMEDIA_TYPE_AUDIO, -1, -1, NULL, 0);
     if (audio_stream_index_ < 0)
         ELOG_WARN("No Audio stream found");
     
-    video_stream_index_ = av_find_best_stream(av_context_, AVMEDIA_TYPE_VIDEO, -1, -1, NULL, 0);
+    video_stream_index_ = av_find_best_stream(ifmt_ctx, AVMEDIA_TYPE_VIDEO, -1, -1, NULL, 0);
     if (video_stream_index_ < 0)
         ELOG_WARN("No Video stream found");
 
+    av_dump_format(ifmt_ctx, 0, input_url_.c_str(), 0);
+
+
      // Get a pointer to the codec context for the video stream
-    pCodecCtx=av_context_->streams[video_stream_index_]->codec;
+    pCodecCtx=ifmt_ctx->streams[video_stream_index_]->codec;
 
-    // int audio_codec = av_context_->streams[audio_stream_index_]->codecpar->codec_id;
-    // int video_codec = av_context_->streams[video_stream_index_]->codecpar->codec_id;
-    // ELOG_DEBUG("Audio codec %d, video codec %d", audio_codec, video_codec);
+    //ELOG_DEBUG("Video stream index %d, Audio Stream index %d", video_stream_index_, audio_stream_index_);
+     ELOG_DEBUG("Video stream index %d", video_stream_index_);
 
-    ELOG_DEBUG("Video stream index %d, Audio Stream index %d", video_stream_index_, audio_stream_index_);
-
-    // deliver_thread_ = boost::thread(&InputReader::deliverLoop, this);
-
-    
     this->startReading();
 
     return true;
@@ -91,7 +87,7 @@ void RtspReader_fromDisk::startReading() {
 
     reading_ = true;
 
-    while (av_read_frame(av_context_, &avpacket_) >= 0) {
+    while (av_read_frame(ifmt_ctx, &avpacket_) >= 0) {
  
         ELOG_DEBUG("Readed packet pts: %ld, dts: %ld,  index %d", avpacket_.pts, avpacket_.dts, avpacket_.stream_index);
         

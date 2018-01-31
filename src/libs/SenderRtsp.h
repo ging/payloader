@@ -59,10 +59,11 @@ class SenderRtsp : public RtpReceiver {
 		    char data[1500];
 		    int length;
 		    
-		    AVFormatContext *outContext;
+		    AVFormatContext *ofmt_ctx;
 		    AVStream *video_st;
 		    AVCodec *video_codec;
 		    AVStream *video_stream_;
+		    AVOutputFormat *outputfmt;
 
 
 		    int ret = 0, frameCount = 0;
