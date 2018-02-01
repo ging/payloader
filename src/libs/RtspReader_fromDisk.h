@@ -14,6 +14,8 @@ extern "C" {
 	#include <libavformat/avformat.h>
 	#include <libavutil/avconfig.h>
 	#include <libavdevice/avdevice.h>
+	#include <libavutil/mathematics.h>
+	#include <libavutil/time.h>
 }
 
 
@@ -24,7 +26,7 @@ namespace payloader {
 class RtspReader_fromDisk {
     DECLARE_LOGGER();
 	public:
-	    RtspReader_fromDisk(const std::string& url, const char *device);
+	    RtspReader_fromDisk(const std::string& url, const std::string& url1, const char *device);
 	    virtual ~RtspReader_fromDisk();
 	    int init();
 	    void setSink( RtpReceiver* receiver);
@@ -33,17 +35,18 @@ class RtspReader_fromDisk {
 		AVFormatContext *ofmt_ctx;
 	    AVFormatContext *ifmt_ctx;
 	   	AVCodecContext *pCodecCtx;
+	   	AVOutputFormat *ofmt;
 	    std::string input_url_;
+	    std::string output_url_;
 	    const char *input_device_;
-	    std::queue<AVPacket> packet_queue_;
+	    
 	    bool reading_;
-		RtpReceiver* sink_;
+		RtpReceiver *sink_;
 	    int video_stream_index_;
 	    int audio_stream_index_;
-
-
-	    boost::mutex queue_mutex_;
-		boost::thread deliver_thread_;
+	    int ret;
+	    int64_t start_time;
+	    AVPacket avpacket_;
 
 	    void startReading();
 	    void deliverLoop();

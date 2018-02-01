@@ -18,14 +18,14 @@
 #include <thread>
 //#include <tchar.h>
 
-
-
-#include <libavcodec/avcodec.h>
-#include <libavformat/avformat.h>
-#include <libavutil/avconfig.h>
-#include <libavdevice/avdevice.h>
-
-
+extern "C" {
+	#include <libavcodec/avcodec.h>
+	#include <libavformat/avformat.h>
+	#include <libavutil/avconfig.h>
+	#include <libavdevice/avdevice.h>
+	#include <libavutil/mathematics.h>
+	#include <libavutil/time.h>
+}
 
 // #pragma comment(lib,"libavformat/libavformat.a")
 // #pragma comment(lib,"libavcodec/libavcodec.a")
@@ -47,11 +47,11 @@ namespace payloader {
 class SenderRtsp : public RtpReceiver {
     DECLARE_LOGGER();
 	public:
-	  	SenderRtsp(const std::string& url);
+	  	SenderRtsp();
 	    virtual ~SenderRtsp();
-	    int init(AVCodecContext *pCodecCtx);
+	    int init();
 	    void receiveRtpPacket(unsigned char* inBuff, int buffSize);
-		void sendPacket(AVPacket& packet );
+		void sendPacket(AVPacket packet, int video_stream_index_, AVFormatContext *ifmt_ctx, AVFormatContext *ofmt_ctx, int64_t start_time);
 		//int write_video_frame(AVFormatContext *oc, int frameCount, AVPacket *pkt);
 
 	private:
@@ -59,16 +59,19 @@ class SenderRtsp : public RtpReceiver {
 		    char data[1500];
 		    int length;
 		    
-		    AVFormatContext *ofmt_ctx;
+		   
+	   		AVStream *in_stream, *out_stream;
+		  
 		    AVStream *video_st;
 		    AVCodec *video_codec;
 		    AVStream *video_stream_;
 		    AVOutputFormat *outputfmt;
 
 
-		    int ret = 0, frameCount = 0;
+		    int ret, frameCount, frame_index;
 		    std::string output_url_;
 		    const char *url;
+		    
 
 
 			/* video output */
