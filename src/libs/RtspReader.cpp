@@ -1,9 +1,9 @@
 #include "RtspReader.h"
 #include <sys/time.h>
 #include <iostream>
-#include <boost/array.hpp>
-#include <boost/asio.hpp>
 
+#include <boost/asio.hpp>
+#include <rtspParser.c>
 
 
 /*Clase encargada de la lectura via rtsp*/
@@ -33,10 +33,11 @@ int RtspReader::init(){
 	if (input_device_ != NULL) {
 		a = av_find_input_format(input_device_);
 	}
-	ELOG_DEBUG("Intento");
-    this->socketWriter();
 
-	/*char errbuff[500];
+	//Probe connection
+  //this->socketWriter();
+
+	char errbuff[500];
 
 	ELOG_DEBUG("Opening source %s", input_url_.c_str());
 	int res = avformat_open_input(&av_context_, input_url_.c_str(), a, NULL);
@@ -65,15 +66,14 @@ int RtspReader::init(){
     	ELOG_WARN("No Video stream found");
 
      // Get a pointer to the codec context for the video stream
-	pCodecCtx=av_context_->streams[video_stream_index_]->codec;
+	   pCodecCtx=av_context_->streams[video_stream_index_]->codec;
 
     ELOG_DEBUG("Video stream index %d, Audio Stream index %d", video_stream_index_, audio_stream_index_);
 
-   */
-    //this->startReading();
+   
+    this->startReading();
 
     return true;
-
 }
 
 void RtspReader::setSink(PacketReceiver* receiver) {
@@ -112,7 +112,6 @@ void RtspReader::socketWriter() {
     for (;;)
     {
       // We use a boost::array to hold the received data. 
-
       boost::array<char, 128> buf;
       boost::system::error_code error;
 
@@ -127,7 +126,7 @@ void RtspReader::socketWriter() {
         break; // Connection closed cleanly by peer.
       else if (error)
         throw boost::system::system_error(error); // Some other error.
-        std::cout.write(buf.data(), len);
+      std::cout.write(buf.data(), len);
     }
   }
   // handle any exceptions that may have been thrown.

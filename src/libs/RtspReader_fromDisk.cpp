@@ -1,7 +1,8 @@
 #include "RtspReader_fromDisk.h"
 #include <sys/time.h>
 #include "SenderRtsp.h"
-
+#include <boost/array.hpp>
+#include <rtsp.h>
 
 /*Clase encargada de la lectura via rtsp*/
 namespace payloader {
@@ -164,7 +165,7 @@ void RtspReader_fromDisk::setSink(RtpReceiver* receiver) {
 }
 
 using boost::asio::ip::tcp;
-    std::string make_daytime_string(){
+std::string make_daytime_string(){
   std::time_t now = std::time(0);
   return std::ctime(&now);
 }
@@ -193,8 +194,30 @@ void RtspReader_fromDisk::socketReciver() {
       boost::system::error_code ignored_error;
 
       // writing the message for current time
+      //boost::asio::write(socket, boost::asio::buffer(message), ignored_error);
 
-      boost::asio::write(socket, boost::asio::buffer(message), ignored_error);
+       // We use a boost::array to hold the received data. 
+      boost::array<char, 128> buf;
+      boost::system::error_code error;
+
+      // The boost::asio::buffer() function automatically determines 
+      // the size of the array to help prevent buffer overruns.
+      size_t len = socket.read_some(boost::asio::buffer(buf), error);
+
+      // When the server closes the connection, 
+      // the ip::tcp::socket::read_some() function will exit with the boost::asio::error::eof error, 
+      // which is how we know to exit the loop.
+      if (error == boost::asio::error::eof)
+        break; // Connection closed cleanly by peer.
+      else if (error)
+        throw boost::system::system_error(error); // Some other error.
+
+    //Para escribir por pantalla el buffer
+      //std::cout.write(buf.data(), len);
+      PRTSP_MESSAGE rtspStruct;
+      parseRtspMessage(rtspStruct, buf.data());
+      printf("Done :%c\n",rtspStruct->type );
+
     }
   }
   catch (std::exception& e)
