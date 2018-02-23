@@ -8,6 +8,10 @@
 
 #include "logger.h"
 #include <queue>
+#include <ctime>
+#include <iostream>
+#include <string>
+#include <boost/asio.hpp>
 
 extern "C" {
 	#include <libavcodec/avcodec.h>
@@ -30,6 +34,8 @@ class RtspReader_fromDisk {
 	    virtual ~RtspReader_fromDisk();
 	    int init();
 	    void setSink( RtpReceiver* receiver);
+	    void socketReciver();
+	    
 
 	private:
 		AVFormatContext *ofmt_ctx;

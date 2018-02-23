@@ -6,7 +6,7 @@
 
 #include "libs/Decoder.h"
 #include "libs/Encoder.h"
-
+#include "libs/Receiver.h"
 #include "libs/SenderRtsp.h"
 #include "libs/Codecs.h"
 
@@ -26,16 +26,12 @@ int main(int argc, const char* argv[]) {
     const char *destine = argv[2];
     const char *device = NULL;
     const char *output = NULL;
-    output = "rtp://138.4.7.72:8554/ej";//rtsp://138.4.7.72:8554/ej
-   // output = "rtp://localhost/desktop/ej/";//rtsp://138.4.7.72:8554/ej
-   	//const char *output = "prueba_a_disco.avi";
+    output = "rtsp://138.4.7.72:8554/ej";//rtsp://138.4.7.72:8554/ej
+   	//output = "rtp://localhost/desktop/ej/";//rtsp://138.4.7.72:8554/ej
+   	//output = "prueba_a_disco.avi";
 
-
+    payloader::Receiver* receiver = new payloader::Receiver(3001);
 	payloader::RtspReader_fromDisk* reader = new payloader::RtspReader_fromDisk(input, output, device);
-	//payloader::Packager* packager = new payloader::Packager();
-	//payloader::Decoder* decoder = new payloader::Decoder();
-	// payloader::Encoder* encoder = new payloader::Encoder();
-	// payloader::Sender* sender = new payloader::Sender("localhost", "3001");
 	payloader::SenderRtsp* sender_rtsp = new payloader::SenderRtsp();
 
 
@@ -70,12 +66,13 @@ int main(int argc, const char* argv[]) {
 
     // common
 	//packager->init();
-		
+	//receiver->setSink();
+	//receiver->init();
 
 
 	// 4a sin transcodificación
 	   reader->setSink(sender_rtsp);
-
+	   sender_rtsp->init();
 
 	// 4b con transcodificación
 	// encoder->init({}, lheInfo);

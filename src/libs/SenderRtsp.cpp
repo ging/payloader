@@ -43,7 +43,7 @@ return;
 }
 
 //Pensar de si el origen del parametro es puntero o no 
-void SenderRtsp::sendPacket(AVPacket pkt, int video_stream_index_, AVFormatContext *ifmt_ctx, AVFormatContext *ofmt_ctx, int64_t start_time){
+void SenderRtsp::sendPacket(AVPacket pkt, int video_stream_index_, AVFormatContext *ifmt_ctx, AVFormatContext *ofmt_ctx, int64_t start_time, AVMediaType type){
 
     //ELOG_DEBUG("Press any key to start streaming...\n");
     //getchar();
@@ -82,22 +82,33 @@ void SenderRtsp::sendPacket(AVPacket pkt, int video_stream_index_, AVFormatConte
     pkt.dts = av_rescale_q_rnd(pkt.dts, in_stream->time_base, out_stream->time_base, (AVRounding)(AV_ROUND_NEAR_INF|AV_ROUND_PASS_MINMAX));
     pkt.duration = av_rescale_q(pkt.duration, in_stream->time_base, out_stream->time_base);
     pkt.pos = -1;
-    //Print to Screen
-    if(pkt.stream_index==video_stream_index_){
-        printf("Send %8d video frames to output URL\n",frame_index);
-        frame_index++;
-    }
+    
 
 
     ELOG_DEBUG("Readed packet pts: %ld, dts: %ld,  index %d", pkt.pts, pkt.dts, pkt.stream_index);
-    //ret = av_write_frame(ofmt_ctx, &pkt);
-    ret = av_interleaved_write_frame(ofmt_ctx, &pkt);// Manda el paquete
-    if (ret < 0) {
-        av_log(NULL, AV_LOG_ERROR, "Error while muxing video packet.\n");
-    }else{
-         av_log(NULL, AV_LOG_DEBUG, "Todo ok.\n");
+
+    if (type == AVMEDIA_TYPE_VIDEO){
+        pkt.stream_index = 0;
+        //ret = av_write_frame(ofmt_ctx, &pkt);
+        ret = av_interleaved_write_frame(ofmt_ctx, &pkt);// Manda el paquete
+        //Print to Screen
+        if(pkt.stream_index==video_stream_index_){
+            printf("Send %8d video frames to output URL\n",frame_index);
+            frame_index++;
+        }
+        if (ret < 0) {
+            av_log(NULL, AV_LOG_ERROR, "Error while muxing video packet.\n");
+        }else{
+             av_log(NULL, AV_LOG_DEBUG, "Todo ok.\n");
+        }
+        av_free_packet(&pkt);
     }
-    av_free_packet(&pkt);
+    if (type == AVMEDIA_TYPE_AUDIO){
+        pkt.stream_index = 1;
+         av_log(NULL, AV_LOG_DEBUG, "Audio que no enviamos aún.\n");
+    }
+    
+    
 }
 
 

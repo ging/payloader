@@ -2,6 +2,7 @@
 #include <sys/time.h>
 #include "SenderRtsp.h"
 
+
 /*Clase encargada de la lectura via rtsp*/
 namespace payloader {
 
@@ -19,9 +20,11 @@ RtspReader_fromDisk::~RtspReader_fromDisk() {
 }
 
 int RtspReader_fromDisk::init(){
-    avformat_network_init();
     av_register_all();
+    //avcodec_register_all();
     avdevice_register_all();
+    avformat_network_init();
+
     char errbuff[500];
     //ifmt_ctx = avformat_alloc_context();
 
@@ -54,23 +57,37 @@ int RtspReader_fromDisk::init(){
         ELOG_WARN("No Audio stream found");
     
     video_stream_index_ = av_find_best_stream(ifmt_ctx, AVMEDIA_TYPE_VIDEO, -1, -1, NULL, 0);
-    if (video_stream_index_ < 0)
+    if (video_stream_index_ < 0){
         ELOG_WARN("No Video stream found");
+    }else{
+        ELOG_DEBUG("Video stream index %d", video_stream_index_);
+    }
 
     av_dump_format(ifmt_ctx, 0, input_url_.c_str(), 0);
 
+    //Para comprobar que codec tenemos 
+    /*AVCodec * codec = NULL;
+    while(codec = av_codec_next(codec))
+    {
+    ELOG_DEBUG("%s",codec->name);
+    }*/
+
     //Output
 
+    //Si squeremos pasar un flujo rtsp a archivo prueba.avi
+   /* AVOutputFormat *omt2;
+    omt2 = av_guess_format( NULL, "prueba.avi", NULL ); //Return the output format
+    ELOG_DEBUG("Guess format %s", omt2);*/
 
-    ret = avformat_alloc_output_context2(&ofmt_ctx, NULL, "mpegts", output_url_.c_str());
+
+    ret = avformat_alloc_output_context2(&ofmt_ctx, NULL, "rtsp" , output_url_.c_str());
     if (!ofmt_ctx) {
-        av_log(NULL, AV_LOG_FATAL, "Could not allocate output format context.\n");
+        av_log(NULL, AV_LOG_FATAL, "Could not allocate output format context for %s \n", output_url_.c_str());
         return -1;
     }else{
         ELOG_DEBUG("Allocated output format context" );
     }
        
-
     ofmt = ofmt_ctx -> oformat;
      if (!ofmt) {
         ELOG_ERROR("Error format %s", output_url_.c_str());
@@ -108,17 +125,35 @@ int RtspReader_fromDisk::init(){
         ELOG_DEBUG("Opened output file.\n");
     }
 
-    //Write file header
-    ret = avformat_write_header(ofmt_ctx, NULL);
-    if (ret < 0) {
-        printf( "Error occurred when opening output URL\n");
-    }
+    // Find the codec.
+     AVCodec *codec;
+     codec = avcodec_find_encoder(ofmt_ctx->oformat->video_codec);
+     if (codec == NULL) {
+         fprintf(stderr, "Codec not found\n");
+         return -1;
+     }else{
+        ELOG_DEBUG("Codec encontrado %s.\n", codec->name);
+     }
 
+    //ff_rtsp_connect(ofmt_ctx);
+//Intento de quitar el tcp fallido
+    AVDictionary *d = NULL;
+    av_dict_set(&d, "rtsp_transport", "udp", 0);
+
+    //Write file header
+   
+   /* ret = avformat_write_header(ofmt_ctx,  &d);
+    if (ret < 0) {
+        printf( "Error occurred when opening output URL, ret = %d \n", ret);
+    }
+    */
+    av_dict_free(&d);
 
     //ELOG_DEBUG("Video stream index %d, Audio Stream index %d", video_stream_index_, audio_stream_index_);
      ELOG_DEBUG("Video stream index %d", video_stream_index_);
 
-    this->startReading();
+    //this->startReading();
+     this->socketReciver();
 
     return true;
 
@@ -127,6 +162,46 @@ int RtspReader_fromDisk::init(){
 void RtspReader_fromDisk::setSink(RtpReceiver* receiver) {
     sink_ = receiver;
 }
+using boost::asio::ip::tcp;
+    std::string make_daytime_string(){
+  std::time_t now = std::time(0);
+  return std::ctime(&now);
+}
+void RtspReader_fromDisk::socketReciver() {
+   try
+  {
+     ELOG_DEBUG("Escuchando... en el 8854");
+
+    // Any program that uses asio need to have at least one io_service object
+    boost::asio::io_service io_service;
+
+    // acceptor object needs to be created to listen for new connections, port 8854 and ipv4
+    tcp::acceptor acceptor(io_service, tcp::endpoint(tcp::v4(), 8854));
+
+    for (;;)
+    {
+      // creates a socket
+      tcp::socket socket(io_service);
+
+      // wait and listen
+      acceptor.accept(socket);
+
+      // prepare message to send back to client
+      std::string message = make_daytime_string();
+
+      boost::system::error_code ignored_error;
+
+      // writing the message for current time
+      boost::asio::write(socket, boost::asio::buffer(message), ignored_error);
+    }
+  }
+  catch (std::exception& e)
+  {
+    std::cerr << e.what() << std::endl;
+  }
+
+}
+
 
 
 void RtspReader_fromDisk::startReading() {
@@ -144,7 +219,7 @@ void RtspReader_fromDisk::startReading() {
             else if (avpacket_.stream_index == audio_stream_index_)
                 type = AVMEDIA_TYPE_AUDIO;
             //Estoy pasando algo que ya es puntero ifmt_ctx
-            sink_->sendPacket(avpacket_, video_stream_index_, ifmt_ctx, ofmt_ctx, start_time);
+            sink_->sendPacket(avpacket_, video_stream_index_, ifmt_ctx, ofmt_ctx, start_time, type);
         }
     }
 

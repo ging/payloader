@@ -51,7 +51,7 @@ class SenderRtsp : public RtpReceiver {
 	    virtual ~SenderRtsp();
 	    int init();
 	    void receiveRtpPacket(unsigned char* inBuff, int buffSize);
-		void sendPacket(AVPacket packet, int video_stream_index_, AVFormatContext *ifmt_ctx, AVFormatContext *ofmt_ctx, int64_t start_time);
+		void sendPacket(AVPacket packet, int video_stream_index_, AVFormatContext *ifmt_ctx, AVFormatContext *ofmt_ctx, int64_t start_time, AVMediaType type);
 		//int write_video_frame(AVFormatContext *oc, int frameCount, AVPacket *pkt);
 
 	private:
