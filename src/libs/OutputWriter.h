@@ -34,7 +34,10 @@ class OutputWriter : public PacketReceiver, public FrameReceiver {
 	    void receivePacket(AVPacket& packet, AVMediaType type);
 	    void receiveFrame(AVFrame* frame, AVMediaType type);
 	    void setSink(FrameReceiver* receiver);
+		void setSink(RtpReceiver *receiver);
 	    void saveFrame(AVFrame *pFrame, int width, int height, int iFrame);
+	    void sendPacket(AVPacket *pkt);
+
 		//void setSink(PacketReceiver* receiver);
 
 	private:

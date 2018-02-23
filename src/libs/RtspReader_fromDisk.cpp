@@ -162,6 +162,7 @@ int RtspReader_fromDisk::init(){
 void RtspReader_fromDisk::setSink(RtpReceiver* receiver) {
     sink_ = receiver;
 }
+
 using boost::asio::ip::tcp;
     std::string make_daytime_string(){
   std::time_t now = std::time(0);
@@ -170,13 +171,13 @@ using boost::asio::ip::tcp;
 void RtspReader_fromDisk::socketReciver() {
    try
   {
-     ELOG_DEBUG("Escuchando... en el 8854");
+     ELOG_DEBUG("Escuchando... en el 13");
 
     // Any program that uses asio need to have at least one io_service object
     boost::asio::io_service io_service;
 
     // acceptor object needs to be created to listen for new connections, port 8854 and ipv4
-    tcp::acceptor acceptor(io_service, tcp::endpoint(tcp::v4(), 8854));
+    tcp::acceptor acceptor(io_service, tcp::endpoint(tcp::v4(), 13));
 
     for (;;)
     {
@@ -192,6 +193,7 @@ void RtspReader_fromDisk::socketReciver() {
       boost::system::error_code ignored_error;
 
       // writing the message for current time
+
       boost::asio::write(socket, boost::asio::buffer(message), ignored_error);
     }
   }

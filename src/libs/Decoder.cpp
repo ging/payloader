@@ -82,6 +82,10 @@ void Decoder::setSink(FrameReceiver* receiver) {
 	sink_ = receiver;
     return;
 }
+void Decoder::setSink(RtpReceiver* receiver){
+}
+void Decoder::sendPacket(AVPacket *pkt){
+}
 
 void Decoder::receivePacket(AVPacket& packet, AVMediaType type) {
 

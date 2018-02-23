@@ -1,9 +1,16 @@
 #include "RtspReader.h"
 #include <sys/time.h>
+#include <iostream>
+#include <boost/array.hpp>
+#include <boost/asio.hpp>
+
+
+
 /*Clase encargada de la lectura via rtsp*/
 namespace payloader {
 
 DEFINE_LOGGER(RtspReader, "RtspReader");
+using boost::asio::ip::tcp;
 
 RtspReader::RtspReader(const std::string& url, const char *device) : input_url_(url), input_device_(device) {
     ELOG_DEBUG("Creating source reader to %s", url.c_str());
@@ -26,8 +33,10 @@ int RtspReader::init(){
 	if (input_device_ != NULL) {
 		a = av_find_input_format(input_device_);
 	}
+	ELOG_DEBUG("Intento");
+    this->socketWriter();
 
-	char errbuff[500];
+	/*char errbuff[500];
 
 	ELOG_DEBUG("Opening source %s", input_url_.c_str());
 	int res = avformat_open_input(&av_context_, input_url_.c_str(), a, NULL);
@@ -60,8 +69,8 @@ int RtspReader::init(){
 
     ELOG_DEBUG("Video stream index %d, Audio Stream index %d", video_stream_index_, audio_stream_index_);
 
-   
-    this->startReading();
+   */
+    //this->startReading();
 
     return true;
 
@@ -71,7 +80,63 @@ void RtspReader::setSink(PacketReceiver* receiver) {
 	sink_ = receiver;
 }
 
+void RtspReader::socketWriter() {
+	ELOG_DEBUG("pidiendo");
+	 try
+  {
+    // Any program that uses asio need to have at least one io_service object
+    boost::asio::io_service io_service;
 
+    // Convert the server name that was specified as a parameter to the application, to a TCP endpoint. 
+    // To do this, we use an ip::tcp::resolver object.
+    tcp::resolver resolver(io_service);
+
+    // A resolver takes a query object and turns it into a list of endpoints. 
+    // We construct a query using the name of the server, specified in argv[1], 
+    // and the name of the service, in this case "daytime == 13".
+    tcp::resolver::query query("138.4.7.72", "daytime");
+
+    // The list of endpoints is returned using an iterator of type ip::tcp::resolver::iterator. 
+    // A default constructed ip::tcp::resolver::iterator object can be used as an end iterator.
+    tcp::resolver::iterator endpoint_iterator = resolver.resolve(query);
+
+    // Now we create and connect the socket.
+    // The list of endpoints obtained above may contain both IPv4 and IPv6 endpoints, 
+    // so we need to try each of them until we find one that works. 
+    // This keeps the client program independent of a specific IP version. 
+    // The boost::asio::connect() function does this for us automatically.
+    tcp::socket socket(io_service);
+    boost::asio::connect(socket, endpoint_iterator);
+
+    // The connection is open. All we need to do now is read the response from the daytime service.
+    for (;;)
+    {
+      // We use a boost::array to hold the received data. 
+
+      boost::array<char, 128> buf;
+      boost::system::error_code error;
+
+      // The boost::asio::buffer() function automatically determines 
+      // the size of the array to help prevent buffer overruns.
+      size_t len = socket.read_some(boost::asio::buffer(buf), error);
+
+      // When the server closes the connection, 
+      // the ip::tcp::socket::read_some() function will exit with the boost::asio::error::eof error, 
+      // which is how we know to exit the loop.
+      if (error == boost::asio::error::eof)
+        break; // Connection closed cleanly by peer.
+      else if (error)
+        throw boost::system::system_error(error); // Some other error.
+        std::cout.write(buf.data(), len);
+    }
+  }
+  // handle any exceptions that may have been thrown.
+  catch (std::exception& e)
+  {
+    std::cerr << e.what() << std::endl;
+  }
+
+}
 void RtspReader::startReading() {
 	
 	AVPacket avpacket_;

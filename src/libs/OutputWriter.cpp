@@ -88,6 +88,8 @@ int OutputWriter::init(AudioCodecInfo audioInfo, VideoCodecInfo videoInfo){
   return 0;
 
 }
+void OutputWriter::sendPacket(AVPacket *pkt){
+}
 
 void OutputWriter::receivePacket(AVPacket& packet, AVMediaType type) {
 
@@ -156,6 +158,8 @@ void OutputWriter::saveFrame(AVFrame *pFrame, int width, int height, int iFrame)
 void OutputWriter::setSink(FrameReceiver* receiver) {
   sink_ = receiver;
   return;
+}
+void OutputWriter::setSink(RtpReceiver *receiver){
 }
 
 }	// Namespace payloader

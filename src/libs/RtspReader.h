@@ -8,6 +8,9 @@
 
 #include "logger.h"
 #include <queue>
+#include <iostream>
+#include <boost/array.hpp>
+#include <boost/asio.hpp>
 
 extern "C" {
 	#include <libavcodec/avcodec.h>
@@ -16,7 +19,7 @@ extern "C" {
 	#include <libavdevice/avdevice.h>
 }
 
-
+ 
 namespace payloader {
 
 #define DELIVERING_INTERVAL 1000
@@ -28,6 +31,7 @@ class RtspReader {
 	    virtual ~RtspReader();
 	    int init();
 	    void setSink(PacketReceiver* receiver);
+	    void socketWriter();
 
 	private:
 	    AVFormatContext* av_context_;
