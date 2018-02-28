@@ -20,6 +20,7 @@ extern "C" {
 	#include <libavdevice/avdevice.h>
 	#include <libavutil/mathematics.h>
 	#include <libavutil/time.h>
+  	//#include "rtsp.h"
 }
 
 
@@ -45,7 +46,8 @@ class RtspReader_fromDisk {
 	    std::string input_url_;
 	    std::string output_url_;
 	    const char *input_device_;
-	    
+		
+
 	    bool reading_;
 		RtpReceiver *sink_;
 	    int video_stream_index_;

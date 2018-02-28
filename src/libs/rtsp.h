@@ -2,8 +2,8 @@
 #include <string.h>
 #include <stdlib.h>
 
-#define TYPE_REQUEST 0
 #define TYPE_RESPONSE 1
+#define TYPE_REQUEST 0
 
 #define TOKEN_OPTION 0
 
@@ -52,6 +52,7 @@ typedef struct _RTSP_MESSAGE {
 		} response;
 	} message;
 } RTSP_MESSAGE, *PRTSP_MESSAGE;
+//declarar un struct, declarar puntero a struct
 
 int parseRtspMessage(PRTSP_MESSAGE msg, char *rtspMessage);
 void freeMessage(PRTSP_MESSAGE msg);

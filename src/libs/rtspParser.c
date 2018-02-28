@@ -1,4 +1,22 @@
-#include "rtsp.h"
+extern "C"{
+	#include "rtsp.h"
+}
+
+#define TYPE_REQUEST 0
+#define TYPE_RESPONSE 1
+
+#define TOKEN_OPTION 0
+
+#define RTSP_ERROR_SUCCESS 0
+#define RTSP_ERROR_NO_MEMORY -1
+#define RTSP_ERROR_MALFORMED -2
+
+#define SEQ_INVALID -1
+
+#define FLAG_ALLOCATED_OPTION_FIELDS 0x1
+#define FLAG_ALLOCATED_MESSAGE_BUFFER 0x2
+#define FLAG_ALLOCATED_OPTION_ITEMS 0x4
+
 
 /* Check if String s begins with the given prefix */
 static int startsWith(const char *s, const char *prefix) {
@@ -71,18 +89,18 @@ int parseRtspMessage(PRTSP_MESSAGE msg, char *rtspMessage) {
 	/* Put the raw message into a string we can use */
 	char *messageBuffer =(char*) malloc((strlen(rtspMessage) + 1) * sizeof(*rtspMessage));
 	printf("Done\n");
-	printf("%s\n",messageBuffer );
+	printf("messageBuffer: %s\n",messageBuffer );
 	if (messageBuffer == NULL) {
 		exitCode = RTSP_ERROR_NO_MEMORY;
-		printf("%s\n",exitCode );
-		printf("Es NULL\n");
+		printf("Exit code: %s\n",exitCode );
+		printf("Message buffer es NULL\n");
 		goto ExitFailure;
 	}
-	printf("NO es NULL\n");
 	strcpy(messageBuffer, rtspMessage);	
-printf("%s\n",messageBuffer );
+	printf("Message Buffer: %s\n",messageBuffer );
 	/* Get the first token of the message*/
 	token = strtok(messageBuffer, delim);
+	printf("Token: %s\n",token );
 	if (token == NULL){
 		exitCode = RTSP_ERROR_MALFORMED; 
 		goto ExitFailure; 
@@ -97,6 +115,7 @@ printf("%s\n",messageBuffer );
 		/* Get the status code */
 		token = strtok(NULL, delim); 
 		statusCode = atoi(token);
+		printf("Estatus code: %s\n",statusCode );
 		if (token == NULL){
 			exitCode = RTSP_ERROR_MALFORMED; 
 			goto ExitFailure;
@@ -104,6 +123,7 @@ printf("%s\n",messageBuffer );
 
 		/* Get the status string */
 		statusStr = strtok(NULL, end);
+		printf("Estatus str: %s\n",statusStr );
 		if (statusStr == NULL){
 			exitCode = RTSP_ERROR_MALFORMED;
 			goto ExitFailure; 
@@ -114,18 +134,21 @@ printf("%s\n",messageBuffer );
 		command = NULL; 
 	}
 	/* The message is a request */
-	else {		
+	else {	
+		printf("Its a request\n");	
 		flag = TYPE_REQUEST; 
 		/* The current token is the command */
 		command = token; 
 		/* Get the target */
 		target = strtok(NULL, delim);
+		printf("Target: %s\n",target );
 		if (target == NULL){
 			exitCode = RTSP_ERROR_MALFORMED;
 			goto ExitFailure;
 		}
 		/* Get the protocol */
 		protocol = strtok(NULL, delim);
+		printf("Protocol: %s\n",protocol );
 		if (protocol == NULL){
 			exitCode = RTSP_ERROR_MALFORMED;
 			goto ExitFailure;
@@ -135,6 +158,7 @@ printf("%s\n",messageBuffer );
 	}
 	/* Check that the protocol is valid */
 	if (strcmp(protocol, "RTSP/1.0")){
+		printf("Protocol invalid\n" );
 		exitCode = RTSP_ERROR_MALFORMED; 
 		goto ExitFailure; 
 	}
@@ -185,21 +209,28 @@ printf("%s\n",messageBuffer );
 	}
 	/* If we never encountered the double CRLF, then the message is malformed! */
 	if (!messageEnded){
+		printf("Mensaje mar formado; %s\n", messageEnded );
 		exitCode = RTSP_ERROR_MALFORMED; 
 		goto ExitFailure; 
 	}
 
 	/* Get sequence number as an integer */
-	sequence = getOptionContent(options, "CSeq"); 
+	sequence = getOptionContent(options, "CSeq");
+	printf("CSeq: %s\n", sequence ); 
 	if (sequence != NULL) {
 		sequenceNum = atoi(sequence);
 	}
 	else {
 		sequenceNum = SEQ_INVALID;
+		printf("Cseg invalid.\n");
 	}
 	/* Package the new parsed message into the struct */
 	if (flag == TYPE_REQUEST){
+		printf("Creando mensaje request.\n");
+		if( msg != NULL)
+			printf("Msg: %s\n",msg );
 		createRtspRequest(msg, messageBuffer, FLAG_ALLOCATED_MESSAGE_BUFFER | FLAG_ALLOCATED_OPTION_ITEMS, command, target, protocol, sequenceNum, options, payload);
+		printf("Struct request creado\n");
 	}
 	else {
 		createRtspResponse(msg, messageBuffer, FLAG_ALLOCATED_MESSAGE_BUFFER | FLAG_ALLOCATED_OPTION_ITEMS, protocol, statusCode, statusStr, sequenceNum, options, payload);
@@ -214,8 +245,8 @@ ExitFailure:
 	if (messageBuffer) {
 		free(messageBuffer);
 	}
-	printf("Done\n");
-	printf("%s\n",flag );
+	printf("En ExitFailure\n");
+	printf("Flag: %s\n",flag );
 	return exitCode;
 }
 

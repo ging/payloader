@@ -1,20 +1,23 @@
+extern "C" {
+    #include "rtspParser.c"
+};
 #include "RtspReader_fromDisk.h"
 #include <sys/time.h>
 #include "SenderRtsp.h"
 #include <boost/array.hpp>
-#include <rtsp.h>
+
 
 /*Clase encargada de la lectura via rtsp*/
 namespace payloader {
 
 DEFINE_LOGGER(RtspReader_fromDisk, "RtspReader_fromDisk");
-
 RtspReader_fromDisk::RtspReader_fromDisk(const std::string& url, const std::string& url1, const char *device) : input_url_(url),  output_url_(url1), input_device_(device) {
     ELOG_DEBUG("Creating source reader to %s", url.c_str());
     ifmt_ctx = NULL;
     reading_ = false;
     sink_ = NULL;
 }
+
 
 RtspReader_fromDisk::~RtspReader_fromDisk() {
     avformat_close_input(&ifmt_ctx);
@@ -25,6 +28,7 @@ int RtspReader_fromDisk::init(){
     //avcodec_register_all();
     avdevice_register_all();
     avformat_network_init();
+
 
     char errbuff[500];
     //ifmt_ctx = avformat_alloc_context();
@@ -170,9 +174,13 @@ std::string make_daytime_string(){
   return std::ctime(&now);
 }
 void RtspReader_fromDisk::socketReciver() {
+  //Asignamos la memoria necesaria dado que sino sera aleatoria su posición y hacemos nun cast dado que en c++ no hay cast desde void*
+  PRTSP_MESSAGE rtspStruct;
+  rtspStruct = (PRTSP_MESSAGE)malloc(sizeof(RTSP_MESSAGE));
    try
   {
      ELOG_DEBUG("Escuchando... en el 13");
+   
 
     // Any program that uses asio need to have at least one io_service object
     boost::asio::io_service io_service;
@@ -214,17 +222,22 @@ void RtspReader_fromDisk::socketReciver() {
 
     //Para escribir por pantalla el buffer
       //std::cout.write(buf.data(), len);
-      PRTSP_MESSAGE rtspStruct;
-      parseRtspMessage(rtspStruct, buf.data());
-      printf("Done :%c\n",rtspStruct->type );
+      char *data = buf.data();
+      //printf("En from , type %c\n",rtspStruct->type );
+       parseRtspMessage(rtspStruct, data);
+      //boost::asio::write(socket, boost::asio::buffer(rtspStruct), ignored_error);
+      printf("Struct request o response creado y ahora a poner los parametros que queremos. %s", data);
+
+     // printf("Saliengo de fuera :%c\n",rtspStruct->type );
 
     }
+    //printf("Saliendo de fuera :%c\n",rtspStruct->type );
   }
   catch (std::exception& e)
   {
+    printf("Saliengo de fuera, ALGO HA PETADO");
     std::cerr << e.what() << std::endl;
   }
-
 }
 
 

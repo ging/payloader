@@ -3,7 +3,7 @@
 #include <iostream>
 
 #include <boost/asio.hpp>
-#include <rtspParser.c>
+
 
 
 /*Clase encargada de la lectura via rtsp*/
