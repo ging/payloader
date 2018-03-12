@@ -44,7 +44,7 @@ int RtspReader::init(){
 	ELOG_DEBUG("Opening source result %d", res);
 	if(res != 0){
 		av_strerror(res, (char*)(&errbuff), 500);
-		ELOG_ERROR("Error opening source %s", errbuff);
+		ELOG_ERROR("Error opening source: %s", errbuff);
 		return res;
     }
 
@@ -94,7 +94,8 @@ void RtspReader::socketWriter() {
     // A resolver takes a query object and turns it into a list of endpoints. 
     // We construct a query using the name of the server, specified in argv[1], 
     // and the name of the service, in this case "daytime == 13".
-    tcp::resolver::query query("138.4.7.72", "daytime");
+    printf("peticion hecha\n");
+    tcp::resolver::query query("138.4.7.72", "8854");
 
     // The list of endpoints is returned using an iterator of type ip::tcp::resolver::iterator. 
     // A default constructed ip::tcp::resolver::iterator object can be used as an end iterator.

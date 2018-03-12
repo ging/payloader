@@ -37,13 +37,13 @@ typedef struct _RTSP_MESSAGE {
 	POPTION_ITEM options;
 	char *payload;
 
-	char* messageBuffer;
+	char* messageBuffer;//request o response?
 
 	union {
 		struct {
 			/* Request fields */
-			char *command;
-			char *target;
+			char *command;//method
+			char *target;//URL
 		} request;
 		struct {
 			/* Response fields */ 

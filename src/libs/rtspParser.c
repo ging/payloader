@@ -1,5 +1,6 @@
 extern "C"{
 	#include "rtsp.h"
+	#include <errno.h>
 }
 
 #define TYPE_REQUEST 0
@@ -46,6 +47,7 @@ static int getMessageLength(PRTSP_MESSAGE msg){
 	}
 	/* Add length of response-specific strings */
 	else {
+		printf("TYPE CHANGED\n");
 		char *statusCodeStr = (char*) malloc(sizeof(int));
 		sprintf(statusCodeStr, "%d", msg->message.response.statusCode);
 		count += strlen(statusCodeStr);
@@ -88,8 +90,7 @@ int parseRtspMessage(PRTSP_MESSAGE msg, char *rtspMessage) {
 
 	/* Put the raw message into a string we can use */
 	char *messageBuffer =(char*) malloc((strlen(rtspMessage) + 1) * sizeof(*rtspMessage));
-	printf("Done\n");
-	printf("messageBuffer: %s\n",messageBuffer );
+	//printf("messageBuffer: %s\n",messageBuffer );
 	if (messageBuffer == NULL) {
 		exitCode = RTSP_ERROR_NO_MEMORY;
 		printf("Exit code: %s\n",exitCode );
@@ -97,10 +98,10 @@ int parseRtspMessage(PRTSP_MESSAGE msg, char *rtspMessage) {
 		goto ExitFailure;
 	}
 	strcpy(messageBuffer, rtspMessage);	
-	printf("Message Buffer: %s\n",messageBuffer );
+	//printf("Message Buffer: %s\n",messageBuffer );
 	/* Get the first token of the message*/
 	token = strtok(messageBuffer, delim);
-	printf("Token: %s\n",token );
+	//printf("Token: %s\n",token );
 	if (token == NULL){
 		exitCode = RTSP_ERROR_MALFORMED; 
 		goto ExitFailure; 
@@ -141,14 +142,14 @@ int parseRtspMessage(PRTSP_MESSAGE msg, char *rtspMessage) {
 		command = token; 
 		/* Get the target */
 		target = strtok(NULL, delim);
-		printf("Target: %s\n",target );
+		//printf("Target: %s\n",target );
 		if (target == NULL){
 			exitCode = RTSP_ERROR_MALFORMED;
 			goto ExitFailure;
 		}
 		/* Get the protocol */
 		protocol = strtok(NULL, delim);
-		printf("Protocol: %s\n",protocol );
+		//printf("Protocol: %s\n",protocol );
 		if (protocol == NULL){
 			exitCode = RTSP_ERROR_MALFORMED;
 			goto ExitFailure;
@@ -209,14 +210,14 @@ int parseRtspMessage(PRTSP_MESSAGE msg, char *rtspMessage) {
 	}
 	/* If we never encountered the double CRLF, then the message is malformed! */
 	if (!messageEnded){
-		printf("Mensaje mar formado; %s\n", messageEnded );
+		printf("Mensaje mal formado; %s\n", messageEnded );
 		exitCode = RTSP_ERROR_MALFORMED; 
 		goto ExitFailure; 
 	}
 
 	/* Get sequence number as an integer */
 	sequence = getOptionContent(options, "CSeq");
-	printf("CSeq: %s\n", sequence ); 
+	//printf("CSeq: %s\n", sequence ); 
 	if (sequence != NULL) {
 		sequenceNum = atoi(sequence);
 	}
@@ -226,13 +227,14 @@ int parseRtspMessage(PRTSP_MESSAGE msg, char *rtspMessage) {
 	}
 	/* Package the new parsed message into the struct */
 	if (flag == TYPE_REQUEST){
-		printf("Creando mensaje request.\n");
+		printf("Creando struct con el mensaje request.\n");
 		if( msg != NULL)
-			printf("Msg: %s\n",msg );
-		createRtspRequest(msg, messageBuffer, FLAG_ALLOCATED_MESSAGE_BUFFER | FLAG_ALLOCATED_OPTION_ITEMS, command, target, protocol, sequenceNum, options, payload);
-		printf("Struct request creado\n");
+			//Lado servidor 
+			createRtspRequest(msg, messageBuffer, FLAG_ALLOCATED_MESSAGE_BUFFER | FLAG_ALLOCATED_OPTION_ITEMS, command, target, protocol, sequenceNum, options, payload);
+			//printf("Msg (struct): %s\n",msg );
 	}
 	else {
+		//Lado cliente
 		createRtspResponse(msg, messageBuffer, FLAG_ALLOCATED_MESSAGE_BUFFER | FLAG_ALLOCATED_OPTION_ITEMS, protocol, statusCode, statusStr, sequenceNum, options, payload);
 	}
 	return RTSP_ERROR_SUCCESS;
@@ -268,14 +270,23 @@ void createRtspResponse(PRTSP_MESSAGE msg, char *message, int flags, char *proto
 void createRtspRequest(PRTSP_MESSAGE msg, char *message, int flags, 
 	char *command, char *target, char *protocol, int sequenceNumber, POPTION_ITEM optionsHead, char *payload) {
 	msg->type = TYPE_REQUEST;
+	printf("TYPE: %d\n", msg->type);
 	msg->flags = flags;
+	printf("FLAGS: %d\n", msg->flags);
 	msg->protocol = protocol; 
+	printf("PROTOCOL: %s\n", msg->protocol);
 	msg->messageBuffer = message;
+	printf("MESSAGE BUFFER: %s\n", msg->messageBuffer);
 	msg->options = optionsHead;
+	printf("OPTIONS: %s\n", msg->options);
 	msg->payload = payload;
+	printf("PAYLOAD: %d\n", msg->payload);
 	msg->sequenceNumber = sequenceNumber;
+	printf("SEQUENCE NUMBER: %d\n", msg->sequenceNumber);
 	msg->message.request.command = command; 
+	printf("COMMAND: %s\n", msg->message.request.command);
 	msg->message.request.target = target;
+	printf("TARGET: %s\n", msg->message.request.target);
 }
 
 /* Retrieves option content from the linked list given the option title */
@@ -334,10 +345,25 @@ void freeOptionList(POPTION_ITEM optionsHead){
 
 /* Serialize the message struct into a string containing the RTSP message */
 char *serializeRtspMessage(PRTSP_MESSAGE msg, int *serializedLength){
+	printf("dentro\n");
 	int size = getMessageLength(msg);
+	printf("size: %d\n", size);
+
 	char *serializedMessage = (char*)malloc(size);
+	printf("serializedMessage: %d\n", *serializedMessage);
+
 	POPTION_ITEM current = msg->options;
 	char *statusCodeStr = (char*)malloc(sizeof(int));
+	printf("statusCodeStr: %d\n", *statusCodeStr);
+	printf("Error: %s\n", strerror(errno));
+	
+	//free(sizeof(int));
+/*
+    if (*statusCodeStr == NULL) {
+        printf("Out of memory\n");
+ 
+    }*/
+	// printf("Error: %s\n", strerror(errno));
 
 	if (msg->type == TYPE_REQUEST){
 		/* command [space] */
@@ -350,6 +376,7 @@ char *serializeRtspMessage(PRTSP_MESSAGE msg, int *serializedLength){
 		strcat(serializedMessage, msg->protocol);
 		strcat(serializedMessage, "\r\n");		 
 	} else {
+		printf("hola\n");
 		/* protocol [space] */ 
 		strcpy(serializedMessage, msg->protocol);
 		strcat(serializedMessage, " ");
@@ -360,9 +387,11 @@ char *serializeRtspMessage(PRTSP_MESSAGE msg, int *serializedLength){
 		/* status str\r\n */ 
 		strcat(serializedMessage, msg->message.response.statusString);
 		strcat(serializedMessage, "\r\n");
+		printf("adios\n");
 	}
 	/* option content\r\n */
 	while (current != NULL){
+		printf("hola de nuevo \n");
 		strcat(serializedMessage, current->option); 
 		strcat(serializedMessage, ": ");
 		strcat(serializedMessage, current->content);
@@ -371,11 +400,15 @@ char *serializeRtspMessage(PRTSP_MESSAGE msg, int *serializedLength){
 	}
 	/* Final \r\n */
 	strcat(serializedMessage, "\r\n");
+printf("msg->payload: %d\n", msg->payload);
+printf("serializedMessage: %s\n", serializedMessage);
 
 	/* payload */
 	strcat(serializedMessage, msg->payload);
+	//printf("Error: %s\n", strerror(errno));
 
-	*serializedLength = strlen(serializedMessage) + 1; 
+	//*serializedLength = strlen(serializedMessage) + 1; 
+	//printf("DONE\n");
 	return serializedMessage;
 }
 
