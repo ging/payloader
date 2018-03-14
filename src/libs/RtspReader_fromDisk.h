@@ -55,7 +55,8 @@ class RtspReader_fromDisk {
 	    void socketReciver();
     	bool ParseRtspRequest(char const * aRequest, unsigned aRequestSize);
 	    char const * DateHeader();
-  		RTSP_CMD_TYPES Handle_RtspRequest(char const * aRequest, unsigned aRequestSize);
+ 		RTSP_CMD_TYPES Handle_RtspRequest(char const * aRequest, unsigned aRequestSize);
+  		
 
 	    
 

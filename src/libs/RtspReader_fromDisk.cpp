@@ -221,10 +221,10 @@ void RtspReader_fromDisk::socketReciver() {
       //std::string message = make_daytime_string();
      
     
-
+      
       // writing the message for current time
       //boost::asio::write(socket, boost::asio::buffer(message), ignored_error);
- boost::system::error_code error;
+      boost::system::error_code error;
    
       
       //ESCUCHAR
@@ -241,7 +241,11 @@ void RtspReader_fromDisk::socketReciver() {
 
       char *data = buf.data();
     
-      Handle_RtspRequest(data,len);
+      printf("%d\n",Handle_RtspRequest(data,len));
+
+      boost::system::error_code ignored_error;
+      std:string response1 = response;
+      boost::asio::write(socket, boost::asio::buffer(response1), ignored_error); 
 /*
       printf("Struct request o response creado y ahora a poner los parametros que queremos.\n");
       rtspStruct->type = TYPE_RESPONSE;
@@ -327,8 +331,8 @@ void RtspReader_fromDisk::deliverLoop() {
           {
               switch (m_RtspCmdType)
               {
-                  case RTSP_OPTIONS:  { Handle_RtspOPTION();printf("m_RtspCmdType options HANDLE: %s\n", m_RtspCmdType);   break; };
-                  case RTSP_DESCRIBE: { Handle_RtspDESCRIBE();printf("m_RtspCmdType describe: %s\n", m_RtspCmdType); break; };
+                  case RTSP_OPTIONS:  { Handle_RtspOPTION();printf("m_RtspCmdType options HANDLE: %d\n", m_RtspCmdType);   break; };
+                  case RTSP_DESCRIBE: { Handle_RtspDESCRIBE();printf("m_RtspCmdType describe: %d\n", m_RtspCmdType); break; };
                   /*case RTSP_SETUP:    { Handle_RtspSETUP();    break; };
                   case RTSP_PLAY:     { Handle_RtspPLAY();     break; };*/
                   default: {};
@@ -395,8 +399,8 @@ bool RtspReader_fromDisk::ParseRtspRequest(char const * aRequest, unsigned aRequ
     if (!parseSucceeded) return false;
 
     // find out the command type
-    if (strstr(CmdName,"OPTIONS")   != nullptr){ m_RtspCmdType = RTSP_OPTIONS;printf("m_RtspCmdType options DENTRO: %s\n", CmdName);}  else
-    if (strstr(CmdName,"DESCRIBE")  != nullptr){ m_RtspCmdType = RTSP_DESCRIBE;printf("m_RtspCmdType describe: %s\n", CmdName);} else
+    if (strstr(CmdName,"OPTIONS")   != nullptr){ m_RtspCmdType = RTSP_OPTIONS;printf("m_RtspCmdType options DENTRO: %d\n", m_RtspCmdType);}  else
+    if (strstr(CmdName,"DESCRIBE")  != nullptr){ m_RtspCmdType = RTSP_DESCRIBE;printf("m_RtspCmdType describe: %d\n", m_RtspCmdType);} else
     if (strstr(CmdName,"SETUP")     != nullptr) m_RtspCmdType = RTSP_SETUP;    else
     if (strstr(CmdName,"PLAY")      != nullptr) m_RtspCmdType = RTSP_PLAY;     else
     if (strstr(CmdName,"TEARDOWN")  != nullptr) m_RtspCmdType = RTSP_TEARDOWN;
@@ -514,14 +518,11 @@ bool RtspReader_fromDisk::ParseRtspRequest(char const * aRequest, unsigned aRequ
 };
 void RtspReader_fromDisk::writeResponse()
 {
-  boost::system::error_code ignored_error;
-  boost::system::error_code error;
-
-
-printf("Contestamos al %s con: \n%s\n", m_RtspCmdType,response);
-std:string response1 = response;
-
-boost::asio::write(socket, boost::asio::buffer(response1), ignored_error); 
+  printf("socket abierto enviando\n\n");
+  printf("Contestamos al %d con: \n%s\n", m_RtspCmdType,response);
+  /*boost::system::error_code ignored_error;
+  std:string response1 = response;
+  boost::asio::write(socket, boost::asio::buffer(response1), ignored_error); */
 }
 
 char const * RtspReader_fromDisk::DateHeader() 
@@ -540,6 +541,7 @@ void RtspReader_fromDisk::Handle_RtspOPTION()
     snprintf(response,sizeof(response),
         "RTSP/1.0 200 OK\r\nCSeq: %s\r\n"
         "Public: DESCRIBE, SETUP, TEARDOWN, PLAY, PAUSE\r\n\r\n",m_CSeq);
+    //writeResponse();
 };
 
 void RtspReader_fromDisk::Handle_RtspDESCRIBE()
