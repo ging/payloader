@@ -1,13 +1,11 @@
 
-//#include "RtspServerSession.h"
-#include "RtspReader_fromDisk.h"
+#include "SessionControler.cpp"
+
 
 extern "C" {
     #include "rtspParser.c"
     #include <stdio.h>
 };
-
-
 
 /*Clase encargada de la lectura via rtsp*/
 namespace payloader {
@@ -187,84 +185,22 @@ int RtspReader_fromDisk::init(){
 void RtspReader_fromDisk::setSink(RtpReceiver* receiver) {
     sink_ = receiver;
 }
-
-using boost::asio::ip::tcp;
-std::string make_daytime_string(){
-  std::time_t now = std::time(0);
-  return std::ctime(&now);
-}
 void RtspReader_fromDisk::socketReciver() {
-  //Asignamos la memoria necesaria dado que sino sera aleatoria su posición y hacemos nun cast dado que en c++ no hay cast desde void*
-  PRTSP_MESSAGE rtspStruct;
-  rtspStruct = (PRTSP_MESSAGE)malloc(sizeof(RTSP_MESSAGE));
    try
   {
      ELOG_DEBUG("Escuchando... en el 8554");
-   
-
-    // Any program that uses asio need to have at least one io_service object
+    // We need to create a server object to accept incoming client connections.
     boost::asio::io_service io_service;
 
-    // acceptor object needs to be created to listen for new connections, port 8854 and ipv4
-    tcp::acceptor acceptor(io_service, tcp::endpoint(tcp::v4(), 8554));
+    // The io_service object provides I/O services, such as sockets, 
+    // that the server object will use.
+    tcp_server server(io_service);
 
-    for (;;)
-    {
-      printf("socket abierto\n\n");
-      // creates a socket
-      tcp::socket socket(io_service);
-
-      // wait and listen
-      acceptor.accept(socket);
-
-      // prepare message to send back to client
-      //std::string message = make_daytime_string();
-     
-    
-      
-      // writing the message for current time
-      //boost::asio::write(socket, boost::asio::buffer(message), ignored_error);
-      boost::system::error_code error;
-   
-      
-      //ESCUCHAR
-      // We use a boost::array to hold the received data. 
-      boost::array<char, 256> buf;
-   
-      // The boost::asio::buffer() function automatically determines 
-      // the size of the array to help prevent buffer overruns.
-      size_t len = socket.read_some(boost::asio::buffer(buf), error);
-
-      //Para escribir por pantalla el buffer
-      printf("RECIBIMOS: \n");
-      std::cout.write(buf.data(), len);
-
-      char *data = buf.data();
-    
-      printf("%d\n",Handle_RtspRequest(data,len));
-
-      boost::system::error_code ignored_error;
-      std:string response1 = response;
-      boost::asio::write(socket, boost::asio::buffer(response1), ignored_error); 
-/*
-      printf("Struct request o response creado y ahora a poner los parametros que queremos.\n");
-      rtspStruct->type = TYPE_RESPONSE;
-      rtspStruct->message.request.command =  "Public: DESCRIBE, SETUP, TEARDOWN, PLAY, PAUSE\r\n\r\n";
-      rtspStruct->message.response.statusCode = atoi("200");
-      printf("CHANGED CODE: %d\n",  rtspStruct->message.response.statusCode);
-      rtspStruct->message.response.statusString = "RTSP/1.0 200 OK";
-      printf("CHANGED STRIG: %s\n",  rtspStruct->message.response.statusString); 
-*/
-
-      // When the server closes the connection, 
-      // the ip::tcp::socket::read_some() function will exit with the boost::asio::error::eof error, 
-      // which is how we know to exit the loop.
-      /*if (error == boost::asio::error::eof)
-        break; // Connection closed cleanly by peer.
-      else if (error)
-        throw boost::system::system_error(error); // Some other error.*/
-    }
-    //printf("Saliendo de fuera :%c\n",rtspStruct->type );
+    // Run the io_service object to perform asynchronous operations.
+    io_service.run();
+    //char* data = tcp_server.getterData();
+    /*printf("FUERA:\n");
+    std::cout.write(data, 64);//buscar len*/
   }
   catch (std::exception& e)
   {
@@ -272,9 +208,6 @@ void RtspReader_fromDisk::socketReciver() {
     std::cerr << e.what() << std::endl;
   }
 }
-
-
-
 void RtspReader_fromDisk::startReading() {
     
     start_time=av_gettime();
@@ -325,8 +258,7 @@ void RtspReader_fromDisk::deliverLoop() {
 }
 
       
-  RTSP_CMD_TYPES RtspReader_fromDisk::Handle_RtspRequest(char const * aRequest, unsigned aRequestSize)
-  {
+RTSP_CMD_TYPES RtspReader_fromDisk::Handle_RtspRequest(char const * aRequest, unsigned aRequestSize){
           if (ParseRtspRequest(aRequest,aRequestSize))
           {
               switch (m_RtspCmdType)
@@ -339,11 +271,10 @@ void RtspReader_fromDisk::deliverLoop() {
               };
           };
           return m_RtspCmdType;
-      };
+};
 
 
-bool RtspReader_fromDisk::ParseRtspRequest(char const * aRequest, unsigned aRequestSize)
-{
+bool RtspReader_fromDisk::ParseRtspRequest(char const * aRequest, unsigned aRequestSize){
     char     CmdName[RTSP_PARAM_STRING_MAX];
     char     CurRequest[RTSP_BUFFER_SIZE];
     unsigned CurRequestSize; 
@@ -604,6 +535,6 @@ void RtspReader_fromDisk::Handle_RtspDESCRIBE()
         strlen(SDPBuf),
         SDPBuf);
  
-}
+};
 
 }   // Namespace payloader
