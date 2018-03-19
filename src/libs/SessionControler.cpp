@@ -10,6 +10,7 @@
 
 
 using boost::asio::ip::tcp;
+boost::array<char, 256> buf;
 
 std::string make_daytime_string(){
   std::time_t now = std::time(0);
@@ -62,14 +63,20 @@ public:
   // rather than ip::tcp::socket::async_write_some(), 
   // to ensure that the entire block of data is sent.
   void start(){
-  while(true){
-  boost::array<char, 256> buf;
-  //printf("LEO\n");
-  boost::asio::async_read(socket_,
-        boost::asio::buffer(buf),
+ 
+  
+  printf("LEO\n");
+
+  socket_.async_read_some(boost::asio::buffer(buf),
+      boost::bind(&tcp_connection::handle_read, shared_from_this(),
+        boost::asio::placeholders::error,
+        boost::asio::placeholders::bytes_transferred));
+
+  /*boost::asio::async_read(socket_,
+        boost::asio::buffer(buf, 64),
          boost::bind(&tcp_connection::handle_read, shared_from_this(),
           boost::asio::placeholders::error,
-          boost::asio::placeholders::bytes_transferred));
+          boost::asio::placeholders::bytes_transferred));*/
     // writing the message for current time
       //boost::asio::write(socket, boost::asio::buffer(message), ignored_error);
       boost::system::error_code error;
@@ -82,18 +89,8 @@ public:
      // size_t len =socket.read_some(boost::asio::buffer(buf), error);
 
    // printf("RECIBIMOS: \n");
-     data = buf.data();
-     size_t len = strlen(data);
-    // printf("RECIBO: \n\n");
-  //Para escribir por pantalla el buffer
-  std::cout.write(data, len);//buscar len
-  //int res = Handle_RtspRequest(data, len);
- 
-    if ((data[0] == 'O') || (data[0] == 'D') || (data[0] == 'S') || (data[0] == 'P') || (data[0] == 'T'))
-                {
-                    RTSP_CMD_TYPES C = Handle_RtspRequest(data,len);
-                    
-                };
+
+    
    
     //printf("%d\n",Handle_RtspRequest(data,64));
     //m_message = response;
@@ -108,25 +105,40 @@ public:
     // could potentially have been removed, 
     // since they are not being used in handle_write().
 
-  }
-  }
+}
 private:
 
   // handle_write() is responsible for any further actions 
   // for this client connection.
   void handle_write(const boost::system::error_code& /*error*/,
-      size_t /*bytes_transferred*/)
-  {
-  start();
-  }
-   void handle_read(const boost::system::error_code& /*error*/,
       size_t /*bytes_transferred*/){
+  }
+   void handle_read(const boost::system::error_code& error,
+      size_t /*bytes_transferred*/){
+     data = buf.data();
+     size_t len = strlen(data);
+    // printf("RECIBO: \n\n");
+  //Para escribir por pantalla el buffer
+  //int res = Handle_RtspRequest(data, len);
+ 
+    //printf("%c\n", data[0]);
+   
+      //std::cout.write(data, len);//buscar len
+      RTSP_CMD_TYPES C = Handle_RtspRequest(data,len);
+                    
+    
+     
+ socket_.async_read_some(boost::asio::buffer(buf),
+      boost::bind(&tcp_connection::handle_read, shared_from_this(),
+        boost::asio::placeholders::error,
+        boost::asio::placeholders::bytes_transferred));
 
   }
   RTSP_CMD_TYPES Handle_RtspRequest(char const * aRequest, unsigned aRequestSize){
   printf("\nDentro \n");
           if (ParseRtspRequest(aRequest,aRequestSize))
           {
+            printf("%d\n", m_RtspCmdType);
               switch (m_RtspCmdType)
               {
                   case RTSP_OPTIONS:  { Handle_RtspOPTION();   break; };
@@ -149,6 +161,7 @@ char const * DateHeader()
 
 void Handle_RtspOPTION()
 {
+        printf("haciendo options\n");   
         snprintf(response,sizeof(response),
         "RTSP/1.0 200 OK\r\nCSeq: %s\r\n"
         "Public: DESCRIBE, SETUP, TEARDOWN, PLAY, PAUSE\r\n\r\n",m_CSeq);
@@ -157,9 +170,8 @@ void Handle_RtspOPTION()
         boost::bind(&tcp_connection::handle_write, shared_from_this(),
           boost::asio::placeholders::error,
           boost::asio::placeholders::bytes_transferred));
-        start();
     //writeResponse();
-};
+}
 
 void Handle_RtspDESCRIBE()
 {
@@ -177,9 +189,12 @@ void Handle_RtspDESCRIBE()
             "RTSP/1.0 404 Stream Not Found\r\nCSeq: %s\r\n%s\r\n",
             m_CSeq, 
             DateHeader());
-
-        send(m_RtspClient,response,strlen(response),0);   
-        return;
+/*boost::asio::async_write(socket_, boost::asio::buffer(response),
+        boost::bind(&tcp_connection::handle_write, shared_from_this(),
+          boost::asio::placeholders::error,
+          boost::asio::placeholders::bytes_transferred));
+        //send(m_RtspClient,response,strlen(response),0);   
+        return;*/
     };
 
     // simulate DESCRIBE server response

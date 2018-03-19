@@ -61,7 +61,6 @@ class RtspReader_fromDisk {
 	    char const * DateHeader();
  		RTSP_CMD_TYPES Handle_RtspRequest(char const * aRequest, unsigned aRequestSize);
   		
-
 	    
 
 	private:
@@ -100,6 +99,7 @@ class RtspReader_fromDisk {
 	    u_short        m_ClientRTCPPort;                          // client port for UDP based RTCP transport  
 	    bool           m_TcpTransport;                            // if Tcp based streaming was activated
 	   // CStreamer    * m_Streamer;                                // the UDP or TCP streamer of that session
+		
 
 	    // parameters of the last received RTSP request
 
