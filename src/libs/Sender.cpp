@@ -24,6 +24,9 @@ int Sender::init() {
     send_Thread_ = boost::thread(&Sender::sendLoop, this);
     return true;
 }
+void Sender::sendPacket(AVPacket pkt, int video_stream_index_,  AVFormatContext *ifmt_ctx, AVFormatContext *ofmt_ctx, int64_t start_time, AVMediaType type){
+}
+
 
 void Sender::receiveRtpPacket(unsigned char* inBuff, int buffSize) {
     boost::mutex::scoped_lock lock(queueMutex_);

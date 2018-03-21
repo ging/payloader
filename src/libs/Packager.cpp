@@ -30,11 +30,18 @@ int Packager::init() {
     return true;
 
 }
+int Packager::init(AVCodecContext *pCodecCtx) {
+    return 0;
+}
 
+
+void Packager::setSink(FrameReceiver* receiver) {
+}
 void Packager::setSink(RtpReceiver* receiver) {
 	sink_ = receiver;
 }
-
+void  Packager::sendPacket(AVPacket *pkt){
+}
 void Packager::receivePacket(AVPacket& packet, AVMediaType type) {
 
     if (type == AVMEDIA_TYPE_VIDEO) {

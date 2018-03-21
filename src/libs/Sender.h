@@ -20,6 +20,7 @@ class Sender : public RtpReceiver {
 	    virtual ~Sender();
 	    int init();
 	    void receiveRtpPacket(unsigned char* inBuff, int buffSize);
+	 	void sendPacket(AVPacket pkt, int video_stream_index_,  AVFormatContext *ifmt_ctx, AVFormatContext *ofmt_ctx, int64_t start_time, AVMediaType type);
 
 	private:
 		struct dataPacket{

@@ -7,8 +7,10 @@
 #include "libs/Decoder.h"
 #include "libs/Encoder.h"
 #include "libs/Receiver.h"
-#include "libs/SenderRtsp.h"
+#include "libs/Sender.h"
 #include "libs/Codecs.h"
+#include "libs/InputReader.h"
+#include "libs/Packager.h"
 
 int main(int argc, const char* argv[]) {
 
@@ -30,9 +32,11 @@ int main(int argc, const char* argv[]) {
    	//output = "rtp://localhost/desktop/ej/";//rtsp://138.4.7.72:8554/ej
    	//output = "prueba_a_disco.avi";
 
-    payloader::Receiver* receiver = new payloader::Receiver(3001);
-	payloader::RtspReader_fromDisk* reader = new payloader::RtspReader_fromDisk(input, output, device);
-	payloader::SenderRtsp* sender_rtsp = new payloader::SenderRtsp();
+   
+	payloader::InputReader* reader = new payloader::InputReader(input, device);
+	payloader::Packager* packager = new payloader::Packager();
+	payloader::RtspReader_fromDisk* sessionCreator = new payloader::RtspReader_fromDisk(input, output, device);
+	payloader::Sender* sender_rtsp = new payloader::Sender("localhost", "6970");
 
 
 	payloader::VideoCodecInfo mp4Info;
@@ -65,13 +69,13 @@ int main(int argc, const char* argv[]) {
     lheInfo.bitRate = 48000;
 
     // common
-	//packager->init();
+	packager->init();
 	//receiver->setSink();
 	//receiver->init();
-
+	sessionCreator->init();
 
 	// 4a sin transcodificación
-	   reader->setSink(sender_rtsp);
+	   reader->setSink(packager);
 	   sender_rtsp->init();
 
 	// 4b con transcodificación
@@ -100,6 +104,6 @@ int main(int argc, const char* argv[]) {
 	
 
 	// common
-	//packager->setSink(sender);
+	packager->setSink(sender_rtsp);
 	reader->init();
 }
