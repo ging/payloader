@@ -58,13 +58,13 @@ class RtspReader_fromDisk {
 	    void setSink( RtpReceiver* receiver);
 	    void socketReciver();
     	bool ParseRtspRequest(char const * aRequest, unsigned aRequestSize);
-	    char const * DateHeader();
+	    void DateHeader();
  		RTSP_CMD_TYPES Handle_RtspRequest(char const * aRequest, unsigned aRequestSize);
   		
+		char   SDPBuf[1024];
 	    
 
 	private:
-
 		char   response[1024];
 		void writeResponse();
 		void Handle_RtspOPTION();

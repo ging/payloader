@@ -19,13 +19,6 @@ RtspReader_fromDisk::RtspReader_fromDisk(const std::string& url, const std::stri
 
     init();
 
-    m_RtspSessionID  = rand() << 16;         // create a session ID
-    m_RtspSessionID |= rand();
-    m_RtspSessionID |= 0x80000000;         
-    m_StreamID       = -1;
-    m_ClientRTPPort  =  0;
-    m_ClientRTCPPort =  0;
-    m_TcpTransport   =  false;
 }
 
 
@@ -38,15 +31,6 @@ int RtspReader_fromDisk::init(){
     //avcodec_register_all();
     avdevice_register_all();
     avformat_network_init();
-
-
-
-    m_RtspCmdType   = RTSP_UNKNOWN;
-    memset(m_URLPreSuffix, 0x00, sizeof(m_URLPreSuffix));
-    memset(m_URLSuffix,    0x00, sizeof(m_URLSuffix));
-    memset(m_CSeq,         0x00, sizeof(m_CSeq));
-    memset(m_URLHostPort,  0x00, sizeof(m_URLHostPort));
-    m_ContentLength  =  0;
 
     char errbuff[500];
     //ifmt_ctx = avformat_alloc_context();
@@ -171,7 +155,10 @@ int RtspReader_fromDisk::init(){
     }
     */
     av_dict_free(&d);
-
+ 
+    /*av_sdp_create ( &ifmt_ctx,1,SDPBuf,1024) ;
+    printf("%s\n",SDPBuf );
+*/
     //ELOG_DEBUG("Video stream index %d, Audio Stream index %d", video_stream_index_, audio_stream_index_);
      ELOG_DEBUG("Video stream index %d", video_stream_index_);
 

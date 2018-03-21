@@ -16,6 +16,7 @@ std::string make_daytime_string(){
   std::time_t now = std::time(0);
   return std::ctime(&now);
 }
+
 class tcp_connection
   // Using shared_ptr and enable_shared_from_this 
   // because we want to keep the tcp_connection object alive 
@@ -25,6 +26,13 @@ class tcp_connection
 public:
   char *data;
   typedef boost::shared_ptr<tcp_connection> pointer;
+  char buf_Date[200];    
+
+void DateHeader() 
+{
+    time_t tt = time(NULL);
+    strftime(buf_Date, sizeof buf_Date, "Date: %a, %b %d %Y %H:%M:%S GMT", gmtime(&tt));
+}
 
   static pointer create(boost::asio::io_service& io_service)
   {
@@ -40,8 +48,12 @@ public:
       int         m_RtspClient;                              // RTSP socket of that session
       int            m_StreamID;                                // number of simulated stream of that session
       u_short        m_ClientRTPPort;                           // client port for UDP based RTP transport
-      u_short        m_ClientRTCPPort;                          // client port for UDP based RTCP transport  
-      bool           m_TcpTransport;                            // if Tcp based streaming was activated
+      u_short        m_ClientRTCPPort;    
+      u_short         m_RtpServerPort;
+      u_short              m_RtcpServerPort;                      // client port for UDP based RTCP transport  
+      bool           m_TcpTransport;
+      int jumper = 6970;
+                                  // if Tcp based streaming was activated
      // CStreamer    * m_Streamer;                                // the UDP or TCP streamer of that session
 
       // parameters of the last received RTSP request
@@ -135,38 +147,50 @@ private:
 
   }
   RTSP_CMD_TYPES Handle_RtspRequest(char const * aRequest, unsigned aRequestSize){
-  printf("\nDentro \n");
-          if (ParseRtspRequest(aRequest,aRequestSize))
-          {
-            printf("%d\n", m_RtspCmdType);
+          if (ParseRtspRequest(aRequest,aRequestSize)){
+             DateHeader();
               switch (m_RtspCmdType)
               {
                   case RTSP_OPTIONS:  { Handle_RtspOPTION();   break; };
-                  case RTSP_DESCRIBE: { Handle_RtspDESCRIBE();printf("DESCRIBE!!!!!!!!!!!!!!!!!!!!!!!!");break; };
-                  /*case RTSP_SETUP:    { Handle_RtspSETUP();    break; };
-                  case RTSP_PLAY:     { Handle_RtspPLAY();     break; };*/
+                  case RTSP_DESCRIBE: { Handle_RtspDESCRIBE(); break; };
+                  case RTSP_SETUP: { Handle_RtspSETUP(); break; };
+                  case RTSP_PLAY:     { Handle_RtspPLAY();     break; };
                   default: {};
               };
           };
-          printf("fuera\n\n");
           return m_RtspCmdType;
 };
-char const * DateHeader() 
-{
-    char buf[200];    
-    time_t tt = time(NULL);
-    strftime(buf, sizeof buf, "Date: %a, %b %d %Y %H:%M:%S GMT", gmtime(&tt));
-    return buf;
-}
-
 void Handle_RtspOPTION()
 {
-        printf("haciendo options\n");   
+
+
+    m_RtspSessionID  = rand() << 16;         // create a session ID
+    m_RtspSessionID |= rand();
+    m_RtspSessionID |= 0x80000000;         
+    m_StreamID       = -1;
+    m_ClientRTPPort  =  0;
+    m_ClientRTCPPort =  0;
+    m_RtpServerPort =   0;
+    m_RtcpServerPort  = 0;
+    m_TcpTransport   =  false;
+
+    m_RtpServerPort = jumper,
+    m_RtcpServerPort = jumper+1;
+    jumper+=2;
+
+    m_RtspCmdType   = RTSP_UNKNOWN;
+    memset(m_URLPreSuffix, 0x00, sizeof(m_URLPreSuffix));
+    memset(m_URLSuffix,    0x00, sizeof(m_URLSuffix));
+    memset(m_CSeq,         0x00, sizeof(m_CSeq));
+    memset(m_URLHostPort,  0x00, sizeof(m_URLHostPort));
+    m_ContentLength  =  0;
+
         snprintf(response,sizeof(response),
         "RTSP/1.0 200 OK\r\nCSeq: %s\r\n"
         "Public: DESCRIBE, SETUP, TEARDOWN, PLAY, PAUSE\r\n\r\n",m_CSeq);
+        std::string response1 = response;
 
-        boost::asio::async_write(socket_, boost::asio::buffer(response),
+        boost::asio::async_write(socket_, boost::asio::buffer(response1),
         boost::bind(&tcp_connection::handle_write, shared_from_this(),
           boost::asio::placeholders::error,
           boost::asio::placeholders::bytes_transferred));
@@ -175,26 +199,28 @@ void Handle_RtspOPTION()
 
 void Handle_RtspDESCRIBE()
 {
-    printf("haciendo descibe\n");   
+      char   response[1024];                     // SDP string size
+
     char   SDPBuf[1024];
     char   URLBuf[1024];
 
     // check whether we know a stream with the URL which is requested
     m_StreamID = -1;        // invalid URL
-    if ((strcmp(m_URLPreSuffix,"mjpeg") == 0) && (strcmp(m_URLSuffix,"1") == 0)) m_StreamID = 0; else
-    if ((strcmp(m_URLPreSuffix,"mjpeg") == 0) && (strcmp(m_URLSuffix,"2") == 0)) m_StreamID = 1;
+    if ((strcmp(m_URLPreSuffix,"ej") == 0) && (strcmp(m_URLSuffix,"1") == 0)) m_StreamID = 0; else
+    if ((strcmp(m_URLPreSuffix,"ej") == 0) && (strcmp(m_URLSuffix,"2") == 0)) m_StreamID = 1;
     if (m_StreamID == -1)
-    {   // Stream not available
+    {  
+     // Stream not available
         snprintf(response,sizeof(response),
             "RTSP/1.0 404 Stream Not Found\r\nCSeq: %s\r\n%s\r\n",
             m_CSeq, 
-            DateHeader());
-/*boost::asio::async_write(socket_, boost::asio::buffer(response),
+            buf_Date);
+boost::asio::async_write(socket_, boost::asio::buffer(response),
         boost::bind(&tcp_connection::handle_write, shared_from_this(),
           boost::asio::placeholders::error,
           boost::asio::placeholders::bytes_transferred));
         //send(m_RtspClient,response,strlen(response),0);   
-        return;*/
+        return;
     };
 
     // simulate DESCRIBE server response
@@ -205,43 +231,143 @@ void Handle_RtspDESCRIBE()
     if (ColonPtr != nullptr) ColonPtr[0] = 0x00;
 
     snprintf(SDPBuf,sizeof(SDPBuf),
-        "v=0\r\n"
-        "o=- %d 1 IN IP4 %s\r\n"           
-        "s=\r\n"
-        "t=0 0\r\n"                                            // start / stop - 0 -> unbounded and permanent session
-        "m=video 0 RTP/AVP 26\r\n"                             // currently we just handle UDP sessions
-        "c=IN IP4 0.0.0.0\r\n",
+       "v=0\r\n"
+        "o=- %d 1 IN IP4 %s\r\n"
+        "s=Unnamed\r\n"
+        "i=N/A\r\n"
+        "c=IN IP4 0.0.0.0\r\n"
+        "t=0 0\r\n"
+        "a=tool:vlc 2.2.5.1 \r\n"
+        "a=rcvonly\r\n"
+        "a=type:broadcast\r\n"
+        "a=charset:UTF-8\r\n"
+        "a=control:rtsp://138.4.7.72:8554/ej/1\r\n"
+        "m=audio 0 RTP/AVP 96\r\n"
+        "b=AS:1536\r\n"
+        "b=RR:0\r\n"
+        "a=rtpmap:96 L16/4800/2\r\n"
+        "a=control:rtsp://138.4.7.72:8554/ej/1/trackID=0\r\n"
+        "m=video 0 RTP/AVP 96\r\n"
+        "b=RR:0\r\n"
+        "a=rtpmap:96 MP4V-ES/90000\r\n"
+        "a=fmtp:96 profile-level-id=3; config=0000012008bc040687ffff0aad8b0218ca31;\r\n"
+        "a=control:rtsp://138.4.7.72:8554/ej/1/trackID=1\r\n",
         rand(),
         OBuf);
+
+    //De prueba segura
+    /* snprintf(SDPBuf,sizeof(SDPBuf), 
+        "v=0\r\n"
+        "o=- %d 1 IN IP4 %s\r\n"
+        "s=Unnamed\r\n"
+        "i=N/A\r\n"
+        "c=IN IP4 0.0.0.0\r\n"
+        "t=0 0\r\n"
+        "a=tool:vlc 2.2.5.1 \r\n"
+        "a=rcvonly\r\n"
+        "a=type:broadcast\r\n"
+        "a=charset:UTF-8\r\n"
+        "a=control:rtsp://138.4.7.72:8554/ej/1\r\n"
+        "m=audio 0 RTP/AVP 96\r\n"
+        "b=AS:1536\r\n"
+        "b=RR:0\r\n"
+        "a=rtpmap:96 L16/4800/2\r\n"
+        "a=control:rtsp://138.4.7.72:8554/ej/1/trackID=0\r\n"
+        "m=video 0 RTP/AVP 96\r\n"
+        "b=RR:0\r\n"
+        "a=rtpmap:96 MP4V-ES/90000\r\n"
+        "a=fmtp:96 profile-level-id=3; config=0000012008bc040687ffff0aad8b0218ca31;\r\n"
+        "a=control:rtsp://138.4.7.72:8554/ej/1/trackID=1\r\n"
+ );
+*/
     char StreamName[64];
     switch (m_StreamID)
     {
-        case 0: strcpy(StreamName,"mjpeg/1"); break;
-        case 1: strcpy(StreamName,"mjpeg/2"); break;
+        case 0: strcpy(StreamName,"ej/1"); break;
+        case 1: strcpy(StreamName,"ej/2"); break;
     };
     snprintf(URLBuf,sizeof(URLBuf),
         "rtsp://%s/%s",
         m_URLHostPort,
         StreamName);
+
     snprintf(response,sizeof(response),
-        "RTSP/1.0 200 OK\r\nCSeq: %s\r\n"
-        "%s\r\n"
-        "Content-Base: %s/\r\n"
+        "RTSP/1.0 200 OK\r\n"
+        "Server: VLC/2.2.5.1\r\n"
+        "%s\r\n"    //fecha
         "Content-Type: application/sdp\r\n"
-        "Content-Length: %d\r\n\r\n"
-        "%s",
-        m_CSeq,
-        DateHeader(),
+        "Content-Base: %s/\r\n"   //URLBuf
+        "Content-Length: %d\r\n"    //strlen(SDPBuf)
+        "Cache-Control: no-cache\r\n"
+        "CSeq: %s\r\n\r\n"
+        "%s",   //SDPBuf
+        buf_Date,
         URLBuf,
         strlen(SDPBuf),
+        m_CSeq,
         SDPBuf);
-
-    boost::asio::async_write(socket_, boost::asio::buffer(response),
+      size_t len = 664;
+   std::string response1 = response;
+  
+    boost::asio::async_write(socket_, boost::asio::buffer(response1),
         boost::bind(&tcp_connection::handle_write, shared_from_this(),
           boost::asio::placeholders::error,
           boost::asio::placeholders::bytes_transferred));
  
 };
+void Handle_RtspSETUP()
+{
+    char response[1024];
+    char Transport[255];
+
+    // simulate SETUP server response
+    if (m_TcpTransport)
+        snprintf(Transport,sizeof(Transport),"RTP/AVP/TCP;unicast;interleaved=0-1");
+    else
+        snprintf(Transport,sizeof(Transport),
+            "RTP/AVP;unicast;destination=127.0.0.1;source=127.0.0.1;client_port=%i-%i;server_port=%i-%i",
+            m_ClientRTPPort,
+            m_ClientRTCPPort,
+            m_RtpServerPort,
+            m_RtcpServerPort
+            );
+    snprintf(response,sizeof(response),
+        "RTSP/1.0 200 OK\r\nCSeq: %s\r\n"
+        "%s\r\n"
+        "Transport: %s\r\n"
+        "Session: %i\r\n\r\n",
+        m_CSeq,
+        buf_Date,
+        Transport,
+        m_RtspSessionID);
+
+    std::string response1 = response;
+    boost::asio::async_write(socket_, boost::asio::buffer(response1),
+        boost::bind(&tcp_connection::handle_write, shared_from_this(),
+          boost::asio::placeholders::error,
+          boost::asio::placeholders::bytes_transferred));
+}
+void Handle_RtspPLAY()
+{
+    char   response[1024];
+
+    // simulate SETUP server response
+    snprintf(response,sizeof(response),
+        "RTSP/1.0 200 OK\r\nCSeq: %s\r\n"
+        "%s\r\n"
+        "Range: npt=0.000-\r\n"
+        "Session: %i\r\n"
+        "RTP-Info: url=rtsp://127.0.0.1:8554/mjpeg/1/track1\r\n\r\n",
+        m_CSeq,
+        buf_Date,
+        m_RtspSessionID);
+
+    std::string response1 = response;
+    boost::asio::async_write(socket_, boost::asio::buffer(response1),
+        boost::bind(&tcp_connection::handle_write, shared_from_this(),
+          boost::asio::placeholders::error,
+          boost::asio::placeholders::bytes_transferred));
+}
 bool ParseRtspRequest(char const * aRequest, unsigned aRequestSize){
     char     CmdName[RTSP_PARAM_STRING_MAX];
     char     CurRequest[RTSP_BUFFER_SIZE];
@@ -363,6 +489,7 @@ bool ParseRtspRequest(char const * aRequest, unsigned aRequestSize){
             m_URLPreSuffix[n] = '\0';
             i = k + 7; 
             parseSucceeded = true;
+            int i= 0;
             break;
         }
     }
