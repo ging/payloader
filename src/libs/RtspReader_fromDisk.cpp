@@ -22,7 +22,7 @@ RtspReader_fromDisk::RtspReader_fromDisk(const std::string& url, const std::stri
 }
 
 
-RtspReader_fromDisk::~RtspReader_fromDisk() {
+RtspReader_fromDisk::~RtspReader_fromDisk(){
     avformat_close_input(&ifmt_ctx);
 }
 
@@ -31,10 +31,10 @@ int RtspReader_fromDisk::init(){
     //avcodec_register_all();
     avdevice_register_all();
     avformat_network_init();
-
+    sendStart_Thread_ = boost::thread(&RtspReader_fromDisk::SenderStart, this);
+    //sendStart_Thread_.join();
     char errbuff[500];
     //ifmt_ctx = avformat_alloc_context();
-
     //Camara web...
    /* AVInputFormat *a = NULL;
     if (input_device_ != NULL) {
@@ -172,9 +172,22 @@ int RtspReader_fromDisk::init(){
 void RtspReader_fromDisk::setSink(RtpReceiver* receiver) {
     sink_ = receiver;
 }
+void RtspReader_fromDisk::PortSetter(){
+   const std::string& port = (char *)(intptr_t) puerto;
+   const std::string& url = "localhost";
+  sink_->init(url ,port);
+}
+void RtspReader_fromDisk::SenderStart(){
+  
+    if(puerto != NULL){
+      printf("Done\n");
+      this->PortSetter();
+    }
+  
+}
+
 void RtspReader_fromDisk::socketReciver() {
-   try
-  {
+   try{
      ELOG_DEBUG("Escuchando... en el 8554");
     // We need to create a server object to accept incoming client connections.
     boost::asio::io_service io_service;
@@ -182,6 +195,8 @@ void RtspReader_fromDisk::socketReciver() {
     // The io_service object provides I/O services, such as sockets, 
     // that the server object will use.
     tcp_server server(io_service);
+
+    
 
     // Run the io_service object to perform asynchronous operations.
     io_service.run();
@@ -244,8 +259,7 @@ void RtspReader_fromDisk::deliverLoop() {
     // }
 }
 
-void RtspReader_fromDisk::writeResponse()
-{
+void RtspReader_fromDisk::writeResponse(){
   printf("socket abierto enviando\n\n");
   printf("Contestamos al %d con: \n%s\n", m_RtspCmdType,response);
   /*boost::system::error_code ignored_error;

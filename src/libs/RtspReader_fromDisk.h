@@ -60,7 +60,9 @@ class RtspReader_fromDisk {
     	bool ParseRtspRequest(char const * aRequest, unsigned aRequestSize);
 	    void DateHeader();
  		RTSP_CMD_TYPES Handle_RtspRequest(char const * aRequest, unsigned aRequestSize);
+  		boost::thread sendStart_Thread_;
   		
+  		//boost::condition_variable cond_;
 		char   SDPBuf[1024];
 	    
 
@@ -69,7 +71,8 @@ class RtspReader_fromDisk {
 		void writeResponse();
 		void Handle_RtspOPTION();
 		void Handle_RtspDESCRIBE();
-
+		void PortSetter();
+		void SenderStart();
 
 		AVFormatContext *ofmt_ctx;
 	    AVFormatContext *ifmt_ctx;
@@ -99,7 +102,7 @@ class RtspReader_fromDisk {
 	    u_short        m_ClientRTCPPort;                          // client port for UDP based RTCP transport  
 	    bool           m_TcpTransport;                            // if Tcp based streaming was activated
 	   // CStreamer    * m_Streamer;                                // the UDP or TCP streamer of that session
-		
+		int cont = 0;
 
 	    // parameters of the last received RTSP request
 

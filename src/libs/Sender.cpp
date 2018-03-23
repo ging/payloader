@@ -6,11 +6,8 @@ namespace payloader {
 
 DEFINE_LOGGER(Sender, "Sender");
 
-Sender::Sender(const std::string& url, const std::string& port) {
-    resolver_.reset(new udp::resolver(io_service_));
-    socket_.reset(new udp::socket(io_service_, udp::endpoint(udp::v4(), 0)));
-    query_.reset(new udp::resolver::query(udp::v4(), url.c_str(), port.c_str()));
-    iterator_ = resolver_->resolve(*query_);
+Sender::Sender() {
+   
 }
 
 Sender::~Sender() {
@@ -19,10 +16,20 @@ Sender::~Sender() {
     io_service_.stop();
 }
 
-int Sender::init() {
+int Sender::init(const std::string& url,const std::string& port) {
+   printf("SENDING¿\n");
+    resolver_.reset(new udp::resolver(io_service_));
+    socket_.reset(new udp::socket(io_service_, udp::endpoint(udp::v4(), 0)));
+    query_.reset(new udp::resolver::query(udp::v4(), url, port));
+    iterator_ = resolver_->resolve(*query_);
     sending_ = true;
     send_Thread_ = boost::thread(&Sender::sendLoop, this);
     return true;
+}
+int Sender::init() {
+   printf("SENDING¿\n");
+    
+    return 0;
 }
 void Sender::sendPacket(AVPacket pkt, int video_stream_index_,  AVFormatContext *ifmt_ctx, AVFormatContext *ofmt_ctx, int64_t start_time, AVMediaType type){
 }

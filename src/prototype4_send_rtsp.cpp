@@ -36,7 +36,7 @@ int main(int argc, const char* argv[]) {
 	payloader::InputReader* reader = new payloader::InputReader(input, device);
 	payloader::Packager* packager = new payloader::Packager();
 	payloader::RtspReader_fromDisk* sessionCreator = new payloader::RtspReader_fromDisk(input, output, device);
-	payloader::Sender* sender_rtsp = new payloader::Sender("localhost", "6970");
+	payloader::Sender* sender_rtsp = new payloader::Sender();
 
 
 	payloader::VideoCodecInfo mp4Info;
@@ -73,10 +73,11 @@ int main(int argc, const char* argv[]) {
 	//receiver->setSink();
 	//receiver->init();
 	sessionCreator->init();
+	sessionCreator->setSink(sender_rtsp);
 
 	// 4a sin transcodificación
-	   reader->setSink(packager);
-	   sender_rtsp->init();
+	reader->setSink(packager);
+	   
 
 	// 4b con transcodificación
 	// encoder->init({}, lheInfo);

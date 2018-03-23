@@ -16,6 +16,7 @@ std::string make_daytime_string(){
   std::time_t now = std::time(0);
   return std::ctime(&now);
 }
+char puerto;
 
 class tcp_connection
   // Using shared_ptr and enable_shared_from_this 
@@ -75,9 +76,6 @@ void DateHeader()
   // rather than ip::tcp::socket::async_write_some(), 
   // to ensure that the entire block of data is sent.
   void start(){
- 
-  
-  printf("LEO\n");
 
   socket_.async_read_some(boost::asio::buffer(buf),
       boost::bind(&tcp_connection::handle_read, shared_from_this(),
@@ -125,26 +123,17 @@ private:
   void handle_write(const boost::system::error_code& /*error*/,
       size_t /*bytes_transferred*/){
   }
-   void handle_read(const boost::system::error_code& error,
-      size_t /*bytes_transferred*/){
-     data = buf.data();
-     size_t len = strlen(data);
-    // printf("RECIBO: \n\n");
-  //Para escribir por pantalla el buffer
-  //int res = Handle_RtspRequest(data, len);
- 
-    //printf("%c\n", data[0]);
-   
-      //std::cout.write(data, len);//buscar len
-      RTSP_CMD_TYPES C = Handle_RtspRequest(data,len);
-                    
-    
-     
- socket_.async_read_some(boost::asio::buffer(buf),
+   void handle_read(const boost::system::error_code& error, size_t /*bytes_transferred*/){
+    data = buf.data();
+    size_t len = strlen(data);
+
+    //std::cout.write(data, len);//buscar len
+    RTSP_CMD_TYPES C = Handle_RtspRequest(data,len);
+                     
+    socket_.async_read_some(boost::asio::buffer(buf),
       boost::bind(&tcp_connection::handle_read, shared_from_this(),
         boost::asio::placeholders::error,
         boost::asio::placeholders::bytes_transferred));
-
   }
   RTSP_CMD_TYPES Handle_RtspRequest(char const * aRequest, unsigned aRequestSize){
           if (ParseRtspRequest(aRequest,aRequestSize)){
@@ -158,6 +147,7 @@ private:
                   default: {};
               };
           };
+
           return m_RtspCmdType;
 };
 void Handle_RtspOPTION()
@@ -219,7 +209,7 @@ boost::asio::async_write(socket_, boost::asio::buffer(response),
         boost::bind(&tcp_connection::handle_write, shared_from_this(),
           boost::asio::placeholders::error,
           boost::asio::placeholders::bytes_transferred));
-        //send(m_RtspClient,response,strlen(response),0);   
+          
         return;
     };
 
@@ -306,14 +296,15 @@ boost::asio::async_write(socket_, boost::asio::buffer(response),
         strlen(SDPBuf),
         m_CSeq,
         SDPBuf);
-      size_t len = 664;
+      
+
    std::string response1 = response;
-  
+
     boost::asio::async_write(socket_, boost::asio::buffer(response1),
         boost::bind(&tcp_connection::handle_write, shared_from_this(),
           boost::asio::placeholders::error,
           boost::asio::placeholders::bytes_transferred));
- 
+  
 };
 void Handle_RtspSETUP()
 {
@@ -342,6 +333,7 @@ void Handle_RtspSETUP()
         m_RtspSessionID);
 
     std::string response1 = response;
+    printf("%s\n",response );
     boost::asio::async_write(socket_, boost::asio::buffer(response1),
         boost::bind(&tcp_connection::handle_write, shared_from_this(),
           boost::asio::placeholders::error,
@@ -373,7 +365,7 @@ bool ParseRtspRequest(char const * aRequest, unsigned aRequestSize){
     char     CurRequest[RTSP_BUFFER_SIZE];
     unsigned CurRequestSize; 
 
-    //init();
+    
     CurRequestSize = aRequestSize;
     memcpy(CurRequest,aRequest,aRequestSize);
 
@@ -402,6 +394,8 @@ bool ParseRtspRequest(char const * aRequest, unsigned aRequestSize){
                     pCP[0] = 0x00;
                     m_ClientRTPPort  = atoi(CP);
                     m_ClientRTCPPort = m_ClientRTPPort + 1;
+                    puerto = m_ClientRTPPort;
+                    printf("%d\n", puerto);
                 };
             };
         };
@@ -566,7 +560,7 @@ public:
     start_accept();
   }
   char* getterData(){
-    return data;
+    return "1";
   }
 
 private:
