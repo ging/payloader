@@ -31,7 +31,7 @@ int RtspReader_fromDisk::init(){
     //avcodec_register_all();
     avdevice_register_all();
     avformat_network_init();
-    sendStart_Thread_ = boost::thread(&RtspReader_fromDisk::SenderStart, this);
+    //sendStart_Thread_ = boost::thread(&RtspReader_fromDisk::SenderStart, this);
     //sendStart_Thread_.join();
     char errbuff[500];
     //ifmt_ctx = avformat_alloc_context();
@@ -176,6 +176,12 @@ void RtspReader_fromDisk::PortSetter(){
    const std::string& port = (char *)(intptr_t) puerto;
    const std::string& url = "localhost";
   sink_->init(url ,port);
+}
+const char* RtspReader_fromDisk::PortGetter(){
+  return puerto;
+}
+bool RtspReader_fromDisk::Done(){
+  return connected;
 }
 void RtspReader_fromDisk::SenderStart(){
   

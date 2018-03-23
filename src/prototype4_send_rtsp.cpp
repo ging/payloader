@@ -33,78 +33,91 @@ int main(int argc, const char* argv[]) {
    	//output = "prueba_a_disco.avi";
 
    
-	payloader::InputReader* reader = new payloader::InputReader(input, device);
-	payloader::Packager* packager = new payloader::Packager();
-	payloader::RtspReader_fromDisk* sessionCreator = new payloader::RtspReader_fromDisk(input, output, device);
-	payloader::Sender* sender_rtsp = new payloader::Sender();
-
-
-	payloader::VideoCodecInfo mp4Info;
-	mp4Info.enabled = true;
-	mp4Info.codec = AV_CODEC_ID_MPEG4;
-    mp4Info.width = 704;
-    mp4Info.height = 396;
-    mp4Info.bitRate = 48000;
-
-    payloader::VideoCodecInfo mjpegInfo;
-	mjpegInfo.enabled = true;
-	mjpegInfo.codec = AV_CODEC_ID_MJPEG;
-    mjpegInfo.width = 640;
-    mjpegInfo.height = 480;
-    mjpegInfo.bitRate = 4800;
-
-    payloader::VideoCodecInfo rv32Info;
-	rv32Info.enabled = true;
-	rv32Info.codec = AV_CODEC_ID_RAWVIDEO;
-    rv32Info.width = 704;
-    rv32Info.height = 396;
-    rv32Info.bitRate = 4800;
-    rv32Info.pix_fmt = AV_PIX_FMT_YUV420P;
-
-    payloader::VideoCodecInfo lheInfo;
-	lheInfo.enabled = true;
-	lheInfo.codec = AV_CODEC_ID_MLHE;
-    lheInfo.width = 1680;
-    lheInfo.height = 1050;
-    lheInfo.bitRate = 48000;
-
-    // common
-	packager->init();
-	//receiver->setSink();
-	//receiver->init();
-	sessionCreator->init();
-	sessionCreator->setSink(sender_rtsp);
-
-	// 4a sin transcodificación
-	reader->setSink(packager);
-	   
-
-	// 4b con transcodificación
-	// encoder->init({}, lheInfo);
-	// decoder->init({}, mp4Info);
-	// reader->setSink(decoder);
-	// decoder->setSink(encoder);
-	// encoder->setSink(packager);
-
-	// 4c desde webcam MJPEG
-	// encoder->init({}, lheInfo);
-	// decoder->init({}, mjpegInfo);
-	// reader->setSink(decoder);
-	// decoder->setSink(encoder);
-	// encoder->setSink(packager);
-
-	// 4e desde desktop
-	// encoder->init({}, lheInfo);
-	// decoder->init({}, rv32Info);
-	// reader->setSink(decoder);
-	// decoder->setSink(encoder);
-	// encoder->setSink(packager);
-
-
-	//Rtsp: InputReader -> sender_rtsp
 	
+	payloader::RtspReader_fromDisk* sessionCreator = new payloader::RtspReader_fromDisk(input, output, device);
 
-	// common
-	packager->setSink(sender_rtsp);
-	reader->init();
+	if(sessionCreator->Done()){
+		const char* port = sessionCreator->PortGetter();
+		//printf("PUERTO= %d",sessionCreator->PortGetter());
+
+		if(port != 0){
+
+			printf("PUERTO ASIGNADO = %d\n",sessionCreator->PortGetter());
+
+			payloader::InputReader* reader = new payloader::InputReader(input, device);
+			payloader::Packager* packager = new payloader::Packager();
+			payloader::Sender* sender_rtsp = new payloader::Sender("localhost", port);
+
+			payloader::VideoCodecInfo mp4Info;
+			mp4Info.enabled = true;
+			mp4Info.codec = AV_CODEC_ID_MPEG4;
+		    mp4Info.width = 704;
+		    mp4Info.height = 396;
+		    mp4Info.bitRate = 48000;
+
+		    payloader::VideoCodecInfo mjpegInfo;
+			mjpegInfo.enabled = true;
+			mjpegInfo.codec = AV_CODEC_ID_MJPEG;
+		    mjpegInfo.width = 640;
+		    mjpegInfo.height = 480;
+		    mjpegInfo.bitRate = 4800;
+
+		    payloader::VideoCodecInfo rv32Info;
+			rv32Info.enabled = true;
+			rv32Info.codec = AV_CODEC_ID_RAWVIDEO;
+		    rv32Info.width = 704;
+		    rv32Info.height = 396;
+		    rv32Info.bitRate = 4800;
+		    rv32Info.pix_fmt = AV_PIX_FMT_YUV420P;
+
+		    payloader::VideoCodecInfo lheInfo;
+			lheInfo.enabled = true;
+			lheInfo.codec = AV_CODEC_ID_MLHE;
+		    lheInfo.width = 1680;
+		    lheInfo.height = 1050;
+		    lheInfo.bitRate = 48000;
+
+		    // common
+			packager->init();
+			//receiver->setSink();
+			//receiver->init();
+
+			sender_rtsp->init();
+
+			// 4a sin transcodificación
+			reader->setSink(packager);
+			   
+
+			// 4b con transcodificación
+			// encoder->init({}, lheInfo);
+			// decoder->init({}, mp4Info);
+			// reader->setSink(decoder);
+			// decoder->setSink(encoder);
+			// encoder->setSink(packager);
+
+			// 4c desde webcam MJPEG
+			// encoder->init({}, lheInfo);
+			// decoder->init({}, mjpegInfo);
+			// reader->setSink(decoder);
+			// decoder->setSink(encoder);
+			// encoder->setSink(packager);
+
+			// 4e desde desktop
+			// encoder->init({}, lheInfo);
+			// decoder->init({}, rv32Info);
+			// reader->setSink(decoder);
+			// decoder->setSink(encoder);
+			// encoder->setSink(packager);
+
+
+			//Rtsp: InputReader -> sender_rtsp
+			
+
+			// common
+			packager->setSink(sender_rtsp);
+			reader->init();
+
+	}
+}
+
 }

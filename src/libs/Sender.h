@@ -16,10 +16,11 @@ namespace payloader {
 class Sender : public RtpReceiver {
     DECLARE_LOGGER();
 	public:
-	    Sender();
+	    Sender(const std::string& url, const std::string& port);
 	    virtual ~Sender();
-	    int init(const std::string& url, const std::string& port);
 	    int init();
+		int init(const std::string& url, const std::string& port);
+
 	    void receiveRtpPacket(unsigned char* inBuff, int buffSize);
 	 	void sendPacket(AVPacket pkt, int video_stream_index_,  AVFormatContext *ifmt_ctx, AVFormatContext *ofmt_ctx, int64_t start_time, AVMediaType type);
 

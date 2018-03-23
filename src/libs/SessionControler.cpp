@@ -16,7 +16,8 @@ std::string make_daytime_string(){
   std::time_t now = std::time(0);
   return std::ctime(&now);
 }
-char puerto;
+const char* puerto = 0;
+bool connected = false;   
 
 class tcp_connection
   // Using shared_ptr and enable_shared_from_this 
@@ -27,7 +28,7 @@ class tcp_connection
 public:
   char *data;
   typedef boost::shared_ptr<tcp_connection> pointer;
-  char buf_Date[200];    
+  char buf_Date[200]; 
 
 void DateHeader() 
 {
@@ -129,11 +130,13 @@ private:
 
     //std::cout.write(data, len);//buscar len
     RTSP_CMD_TYPES C = Handle_RtspRequest(data,len);
-                     
+    
+    if(connected == false){ 
     socket_.async_read_some(boost::asio::buffer(buf),
       boost::bind(&tcp_connection::handle_read, shared_from_this(),
         boost::asio::placeholders::error,
         boost::asio::placeholders::bytes_transferred));
+  }
   }
   RTSP_CMD_TYPES Handle_RtspRequest(char const * aRequest, unsigned aRequestSize){
           if (ParseRtspRequest(aRequest,aRequestSize)){
@@ -354,6 +357,8 @@ void Handle_RtspPLAY()
         buf_Date,
         m_RtspSessionID);
 
+    connected = true;
+
     std::string response1 = response;
     boost::asio::async_write(socket_, boost::asio::buffer(response1),
         boost::bind(&tcp_connection::handle_write, shared_from_this(),
@@ -394,7 +399,7 @@ bool ParseRtspRequest(char const * aRequest, unsigned aRequestSize){
                     pCP[0] = 0x00;
                     m_ClientRTPPort  = atoi(CP);
                     m_ClientRTCPPort = m_ClientRTPPort + 1;
-                    puerto = m_ClientRTPPort;
+                    puerto = (char *)(intptr_t)m_ClientRTPPort;
                     printf("%d\n", puerto);
                 };
             };
@@ -588,7 +593,7 @@ private:
     }
 
     // Call start_accept() to initiate the next accept operation.
-    start_accept();
+    //start_accept();
   }
 
   tcp::acceptor acceptor_;
