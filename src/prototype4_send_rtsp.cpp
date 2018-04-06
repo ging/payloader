@@ -12,6 +12,7 @@
 #include "libs/InputReader.h"
 #include "libs/Packager.h"
 
+
 int main(int argc, const char* argv[]) {
 
 	if (argc != 2) {
@@ -38,15 +39,17 @@ int main(int argc, const char* argv[]) {
 
 	if(sessionCreator->Done()){
 		const char* port = sessionCreator->PortGetter();
-		//printf("PUERTO= %d",sessionCreator->PortGetter());
-
+		//(std::string& str(port, strnlen(port, 4));
+		//const std::string& go = port
 		if(port != 0){
 
-			printf("PUERTO ASIGNADO = %d\n",sessionCreator->PortGetter());
+			printf("PUERTO ASIGNADO = %d\n",port);
+			//printf("PUERTO ASIGNADO = %s\n",def);
+
 
 			payloader::InputReader* reader = new payloader::InputReader(input, device);
 			payloader::Packager* packager = new payloader::Packager();
-			payloader::Sender* sender_rtsp = new payloader::Sender("localhost", port);
+			payloader::Sender* sender_rtsp = new payloader::Sender("localhost", foo);
 
 			payloader::VideoCodecInfo mp4Info;
 			mp4Info.enabled = true;

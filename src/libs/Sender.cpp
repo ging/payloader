@@ -6,7 +6,8 @@ namespace payloader {
 
 DEFINE_LOGGER(Sender, "Sender");
 
-Sender::Sender(const std::string& url, const std::string& port) {
+Sender::Sender(const std::string url, const std::string port) {
+    printf("PETO\n");
     resolver_.reset(new udp::resolver(io_service_));
     socket_.reset(new udp::socket(io_service_, udp::endpoint(udp::v4(), 0)));
     query_.reset(new udp::resolver::query(udp::v4(), url.c_str(), port.c_str()));
