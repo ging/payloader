@@ -63,6 +63,7 @@ class RtspReader_fromDisk {
   		boost::thread sendStart_Thread_;
   		const char*  PortGetter();
   		bool Done();
+  		const char* puerto;
   		
   		//boost::condition_variable cond_;
 		char   SDPBuf[1024];

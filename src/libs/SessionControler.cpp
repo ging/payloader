@@ -16,7 +16,7 @@ std::string make_daytime_string(){
   std::time_t now = std::time(0);
   return std::ctime(&now);
 }
-const char* puerto = 0;
+
 bool connected = false;   
 
 class tcp_connection
@@ -29,48 +29,47 @@ public:
   char *data;
   typedef boost::shared_ptr<tcp_connection> pointer;
   char buf_Date[200]; 
+  const char* puerto = 0;
 
-void DateHeader() 
-{
+const char* getPort(){
+  printf("Devuelvo %d\n", puerto);
+  return puerto;
+}
+
+
+void DateHeader() {
     time_t tt = time(NULL);
     strftime(buf_Date, sizeof buf_Date, "Date: %a, %b %d %Y %H:%M:%S GMT", gmtime(&tt));
 }
+static pointer create(boost::asio::io_service& io_service){
+  return pointer(new tcp_connection(io_service));
+}
+tcp::socket& socket(){
+  return socket_;
+}
+RTSP_CMD_TYPES m_RtspCmdType;  
+ // global session state parameters
+int            m_RtspSessionID;
+int         m_RtspClient;                              // RTSP socket of that session
+int            m_StreamID;                                // number of simulated stream of that session
+u_short        m_ClientRTPPort;                           // client port for UDP based RTP transport
+u_short        m_ClientRTCPPort;    
+u_short         m_RtpServerPort;
+u_short              m_RtcpServerPort;                      // client port for UDP based RTCP transport  
+bool           m_TcpTransport;
+int jumper = 6970; // if Tcp based streaming was activated
 
-  static pointer create(boost::asio::io_service& io_service)
-  {
-    return pointer(new tcp_connection(io_service));
-  }
-  tcp::socket& socket()
-  {
-    return socket_;
-  }
- RTSP_CMD_TYPES m_RtspCmdType;  
-       // global session state parameters
-      int            m_RtspSessionID;
-      int         m_RtspClient;                              // RTSP socket of that session
-      int            m_StreamID;                                // number of simulated stream of that session
-      u_short        m_ClientRTPPort;                           // client port for UDP based RTP transport
-      u_short        m_ClientRTCPPort;    
-      u_short         m_RtpServerPort;
-      u_short              m_RtcpServerPort;                      // client port for UDP based RTCP transport  
-      bool           m_TcpTransport;
-      int jumper = 6970;
-                                  // if Tcp based streaming was activated
-     // CStreamer    * m_Streamer;                                // the UDP or TCP streamer of that session
+// parameters of the last received RTSP request
 
-      // parameters of the last received RTSP request
-
-                                // command type (if any) of the current request
-      char           m_URLPreSuffix[RTSP_PARAM_STRING_MAX];     // stream name pre suffix 
-      char           m_URLSuffix[RTSP_PARAM_STRING_MAX];        // stream name suffix
-      char           m_CSeq[RTSP_PARAM_STRING_MAX];             // RTSP command sequence number
-      char           m_URLHostPort[RTSP_BUFFER_SIZE];           // host:port part of the URL
-      unsigned       m_ContentLength;      
-      char   response[1024];                     // SDP string size
-      // We use a boost::array to hold the received data. 
+                          // command type (if any) of the current request
+char           m_URLPreSuffix[RTSP_PARAM_STRING_MAX];     // stream name pre suffix 
+char           m_URLSuffix[RTSP_PARAM_STRING_MAX];        // stream name suffix
+char           m_CSeq[RTSP_PARAM_STRING_MAX];             // RTSP command sequence number
+char           m_URLHostPort[RTSP_BUFFER_SIZE];           // host:port part of the URL
+unsigned       m_ContentLength;      
+char   response[1024];                     // SDP string size
+// We use a boost::array to hold the received data. 
   tcp_connection(boost::asio::io_service& io_service): socket_(io_service){
-
-
   }
   // Call boost::asio::async_write() to serve the data to the client. 
   // We are using boost::asio::async_write(), 
@@ -82,41 +81,10 @@ void DateHeader()
       boost::bind(&tcp_connection::handle_read, shared_from_this(),
         boost::asio::placeholders::error,
         boost::asio::placeholders::bytes_transferred));
-
-  /*boost::asio::async_read(socket_,
-        boost::asio::buffer(buf, 64),
-         boost::bind(&tcp_connection::handle_read, shared_from_this(),
-          boost::asio::placeholders::error,
-          boost::asio::placeholders::bytes_transferred));*/
-    // writing the message for current time
-      //boost::asio::write(socket, boost::asio::buffer(message), ignored_error);
-      boost::system::error_code error;
-   
-      
-      //ESCUCHAR
-   
-      // The boost::asio::buffer() function automatically determines 
-      // the size of the array to help prevent buffer overruns.
-     // size_t len =socket.read_some(boost::asio::buffer(buf), error);
-
-   // printf("RECIBIMOS: \n");
-
-    
-   
-    //printf("%d\n",Handle_RtspRequest(data,64));
-    //m_message = response;
-
-    // When initiating the asynchronous operation, 
-    // and if using boost::bind(), 
-    // we must specify only the arguments 
-    // that match the handler's parameter list. 
-    // In this code, both of the argument placeholders 
-    // (boost::asio::placeholders::error 
-    // and boost::asio::placeholders::bytes_transferred) 
-    // could potentially have been removed, 
-    // since they are not being used in handle_write().
-
+        boost::system::error_code error;
+        printf("HOLA 2\n");
 }
+
 private:
 
   // handle_write() is responsible for any further actions 
@@ -125,6 +93,7 @@ private:
       size_t /*bytes_transferred*/){
   }
    void handle_read(const boost::system::error_code& error, size_t /*bytes_transferred*/){
+   printf("HOLA 1\n");
     data = buf.data();
     size_t len = strlen(data);
 
@@ -136,7 +105,7 @@ private:
       boost::bind(&tcp_connection::handle_read, shared_from_this(),
         boost::asio::placeholders::error,
         boost::asio::placeholders::bytes_transferred));
-  }
+    }
   }
   RTSP_CMD_TYPES Handle_RtspRequest(char const * aRequest, unsigned aRequestSize){
           if (ParseRtspRequest(aRequest,aRequestSize)){
@@ -155,8 +124,6 @@ private:
 };
 void Handle_RtspOPTION()
 {
-
-
     m_RtspSessionID  = rand() << 16;         // create a session ID
     m_RtspSessionID |= rand();
     m_RtspSessionID |= 0x80000000;         
@@ -167,6 +134,7 @@ void Handle_RtspOPTION()
     m_RtcpServerPort  = 0;
     m_TcpTransport   =  false;
 
+    //Diferencia de 1 entre UDP;RTP...(comprobar)
     m_RtpServerPort = jumper,
     m_RtcpServerPort = jumper+1;
     jumper+=2;
@@ -178,43 +146,40 @@ void Handle_RtspOPTION()
     memset(m_URLHostPort,  0x00, sizeof(m_URLHostPort));
     m_ContentLength  =  0;
 
-        snprintf(response,sizeof(response),
-        "RTSP/1.0 200 OK\r\nCSeq: %s\r\n"
-        "Public: DESCRIBE, SETUP, TEARDOWN, PLAY, PAUSE\r\n\r\n",m_CSeq);
-        std::string response1 = response;
+    snprintf(response,sizeof(response),
+    "RTSP/1.0 200 OK\r\nCSeq: %s\r\n"
+    "Public: DESCRIBE, SETUP, TEARDOWN, PLAY, PAUSE\r\n\r\n",m_CSeq);
+    std::string response1 = response;
 
-        boost::asio::async_write(socket_, boost::asio::buffer(response1),
-        boost::bind(&tcp_connection::handle_write, shared_from_this(),
-          boost::asio::placeholders::error,
-          boost::asio::placeholders::bytes_transferred));
-    //writeResponse();
+    boost::asio::async_write(socket_, boost::asio::buffer(response1),
+    boost::bind(&tcp_connection::handle_write, shared_from_this(),
+      boost::asio::placeholders::error,
+      boost::asio::placeholders::bytes_transferred));
 }
 
-void Handle_RtspDESCRIBE()
-{
-      char   response[1024];                     // SDP string size
 
-    char   SDPBuf[1024];
-    char   URLBuf[1024];
+void Handle_RtspDESCRIBE(){
+  char   response[1024];                     // SDP string size
+  char   SDPBuf[1024];
+  char   URLBuf[1024];
 
-    // check whether we know a stream with the URL which is requested
-    m_StreamID = -1;        // invalid URL
-    if ((strcmp(m_URLPreSuffix,"ej") == 0) && (strcmp(m_URLSuffix,"1") == 0)) m_StreamID = 0; else
-    if ((strcmp(m_URLPreSuffix,"ej") == 0) && (strcmp(m_URLSuffix,"2") == 0)) m_StreamID = 1;
-    if (m_StreamID == -1)
-    {  
-     // Stream not available
-        snprintf(response,sizeof(response),
-            "RTSP/1.0 404 Stream Not Found\r\nCSeq: %s\r\n%s\r\n",
-            m_CSeq, 
-            buf_Date);
-boost::asio::async_write(socket_, boost::asio::buffer(response),
-        boost::bind(&tcp_connection::handle_write, shared_from_this(),
-          boost::asio::placeholders::error,
-          boost::asio::placeholders::bytes_transferred));
-          
-        return;
-    };
+  // check whether we know a stream with the URL which is requested
+  m_StreamID = -1;        // invalid URL
+  if ((strcmp(m_URLPreSuffix,"ej") == 0) && (strcmp(m_URLSuffix,"1") == 0)) m_StreamID = 0; else
+  if ((strcmp(m_URLPreSuffix,"ej") == 0) && (strcmp(m_URLSuffix,"2") == 0)) m_StreamID = 1;
+  if (m_StreamID == -1)
+  {  
+ // Stream not available
+  snprintf(response,sizeof(response),
+    "RTSP/1.0 404 Stream Not Found\r\nCSeq: %s\r\n%s\r\n",
+    m_CSeq, 
+    buf_Date);
+  boost::asio::async_write(socket_, boost::asio::buffer(response),
+      boost::bind(&tcp_connection::handle_write, shared_from_this(),
+        boost::asio::placeholders::error,
+        boost::asio::placeholders::bytes_transferred)); 
+      return;
+};
 
     // simulate DESCRIBE server response
     char OBuf[256];
@@ -345,7 +310,6 @@ void Handle_RtspSETUP()
 void Handle_RtspPLAY()
 {
     char   response[1024];
-
     // simulate SETUP server response
     snprintf(response,sizeof(response),
         "RTSP/1.0 200 OK\r\nCSeq: %s\r\n"
@@ -555,6 +519,7 @@ class tcp_server
 {
 public:
     char* data;
+    const char* puerto = 0;
   // Constructor: initialises an acceptor to listen on TCP port 13.
   tcp_server(boost::asio::io_service& io_service)
     : acceptor_(io_service, tcp::endpoint(tcp::v4(), 8554))
@@ -564,10 +529,10 @@ public:
     // to wait for a new connection.
     start_accept();
   }
-  char* getterData(){
-    return "1";
+  const char* getterData(){
+    return puerto;
   }
-
+  
 private:
   void start_accept()
   {
@@ -580,7 +545,9 @@ private:
     acceptor_.async_accept(new_connection->socket(),
         boost::bind(&tcp_server::handle_accept, this, new_connection,
           boost::asio::placeholders::error));
+  
   }
+
 
   // handle_accept() is called when the asynchronous accept operation 
   // initiated by start_accept() finishes. It services the client request
@@ -590,11 +557,10 @@ private:
     if (!error)
     {   
       new_connection->start();
+      puerto = new_connection->getPort();
     }
-
     // Call start_accept() to initiate the next accept operation.
     //start_accept();
   }
-
   tcp::acceptor acceptor_;
 };

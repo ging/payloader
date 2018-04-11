@@ -3,7 +3,6 @@
 
 
 extern "C" {
-    #include "rtspParser.c"
     #include <stdio.h>
 };
 
@@ -16,7 +15,6 @@ RtspReader_fromDisk::RtspReader_fromDisk(const std::string& url, const std::stri
     ifmt_ctx = NULL;
     reading_ = false;
     sink_ = NULL;
-
     init();
 
 }
@@ -202,13 +200,14 @@ void RtspReader_fromDisk::socketReciver() {
     // that the server object will use.
     tcp_server server(io_service);
 
-    
 
     // Run the io_service object to perform asynchronous operations.
     io_service.run();
     //char* data = tcp_server.getterData();
     /*printf("FUERA:\n");
     std::cout.write(data, 64);//buscar len*/
+    printf("DEBE SER el pùerto: %d\n",server.getterData());
+    puerto = server.getterData();
   }
   catch (std::exception& e)
   {

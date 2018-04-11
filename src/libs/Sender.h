@@ -16,7 +16,7 @@ namespace payloader {
 class Sender : public RtpReceiver {
     DECLARE_LOGGER();
 	public:
-	    Sender(const std::string& url, const std::string& port);
+	    Sender(const std::string url, const std::string port);
 	    virtual ~Sender();
 	    int init();
 		int init(const std::string& url, const std::string& port);
