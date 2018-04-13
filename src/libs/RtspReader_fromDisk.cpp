@@ -199,8 +199,6 @@ void RtspReader_fromDisk::socketReciver() {
     // The io_service object provides I/O services, such as sockets, 
     // that the server object will use.
     tcp_server server(io_service);
-
-
     // Run the io_service object to perform asynchronous operations.
     io_service.run();
     //char* data = tcp_server.getterData();

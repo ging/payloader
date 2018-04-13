@@ -10,7 +10,13 @@
 
 
 using boost::asio::ip::tcp;
-boost::array<char, 256> buf;
+boost::array<char, 256> buf; // We use a boost::array to hold the received data. 
+
+class PortReceiver{  
+    public:  
+        virtual void tomaPuerto(const char* puerto) = 0;  
+        virtual ~PortReceiver(){};  
+};  
 
 std::string make_daytime_string(){
   std::time_t now = std::time(0);
@@ -19,24 +25,26 @@ std::string make_daytime_string(){
 
 bool connected = false;   
 
-class tcp_connection
-  // Using shared_ptr and enable_shared_from_this 
-  // because we want to keep the tcp_connection object alive 
-  // as long as there is an operation that refers to it.
-  : public boost::enable_shared_from_this<tcp_connection>
-{
+// Using shared_ptr and enable_shared_from_this 
+// because we want to keep the tcp_connection object alive 
+// as long as there is an operation that refers to it.
+class tcp_connection : public boost::enable_shared_from_this<tcp_connection>{
 public:
-  char *data;
-  typedef boost::shared_ptr<tcp_connection> pointer;
-  char buf_Date[200]; 
-  const char* puerto = 0;
+PortReceiver *myparent;
+char *data;
+typedef boost::shared_ptr<tcp_connection> pointer;
+char buf_Date[200]; 
+const char* puerto = 0;
 
+tcp_connection(boost::asio::io_service &io_service): socket_(io_service){
+}
 const char* getPort(){
-  printf("Devuelvo %d\n", puerto);
   return puerto;
 }
 
-
+void registerParent(PortReceiver *parent){
+  this->myparent = parent;
+}
 void DateHeader() {
     time_t tt = time(NULL);
     strftime(buf_Date, sizeof buf_Date, "Date: %a, %b %d %Y %H:%M:%S GMT", gmtime(&tt));
@@ -68,21 +76,15 @@ char           m_CSeq[RTSP_PARAM_STRING_MAX];             // RTSP command sequen
 char           m_URLHostPort[RTSP_BUFFER_SIZE];           // host:port part of the URL
 unsigned       m_ContentLength;      
 char   response[1024];                     // SDP string size
-// We use a boost::array to hold the received data. 
-  tcp_connection(boost::asio::io_service& io_service): socket_(io_service){
-  }
-  // Call boost::asio::async_write() to serve the data to the client. 
-  // We are using boost::asio::async_write(), 
-  // rather than ip::tcp::socket::async_write_some(), 
-  // to ensure that the entire block of data is sent.
-  void start(){
+
+
+void start(){
 
   socket_.async_read_some(boost::asio::buffer(buf),
       boost::bind(&tcp_connection::handle_read, shared_from_this(),
         boost::asio::placeholders::error,
         boost::asio::placeholders::bytes_transferred));
         boost::system::error_code error;
-        printf("HOLA 2\n");
 }
 
 private:
@@ -93,7 +95,6 @@ private:
       size_t /*bytes_transferred*/){
   }
    void handle_read(const boost::system::error_code& error, size_t /*bytes_transferred*/){
-   printf("HOLA 1\n");
     data = buf.data();
     size_t len = strlen(data);
 
@@ -364,7 +365,8 @@ bool ParseRtspRequest(char const * aRequest, unsigned aRequestSize){
                     m_ClientRTPPort  = atoi(CP);
                     m_ClientRTCPPort = m_ClientRTPPort + 1;
                     puerto = (char *)(intptr_t)m_ClientRTPPort;
-                    printf("%d\n", puerto);
+                    this->myparent->tomaPuerto(puerto);
+                    //printf("%d\n", puerto);
                 };
             };
         };
@@ -515,11 +517,14 @@ bool ParseRtspRequest(char const * aRequest, unsigned aRequestSize){
 
 
 
-class tcp_server
-{
+class tcp_server : public PortReceiver{
 public:
     char* data;
     const char* puerto = 0;
+
+  void tomaPuerto(const char* puerto){
+    this->puerto = puerto;
+  }
   // Constructor: initialises an acceptor to listen on TCP port 13.
   tcp_server(boost::asio::io_service& io_service)
     : acceptor_(io_service, tcp::endpoint(tcp::v4(), 8554))
@@ -539,6 +544,8 @@ private:
     // creates a socket
     tcp_connection::pointer new_connection =
       tcp_connection::create(acceptor_.get_io_service());
+
+      new_connection->registerParent(this);
 
     // initiates an asynchronous accept operation 
     // to wait for a new connection. 

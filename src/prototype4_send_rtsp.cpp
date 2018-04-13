@@ -41,37 +41,35 @@ int main(int argc, const char* argv[]) {
 
 	if(sessionCreator->Done()){
 		const char *port = sessionCreator->PortGetter();
-		//(std::string& str(port, strnlen(portport, 4));
+		std::string str(port);
+		std::cout << str;
 		//const std::string& go = port
+		printf("pintando = %s\n", str.c_str());
 
-		//pasar std::string a char*
-		/*std::string str;
+		/*//pasar std::string a char*
+		std::string str;
 		char * writable = new char[str.size() + 1];
 		std::copy(str.begin(), str.end(), writable);
 		writable[str.size()] = '\0'; // don't forget the terminating 0
 
 		// don't forget to free the string after finished using it
-		delete[] writable;
-*/
-		//const char *s = port;		
-		/*std::string hastalapolla;
-		hastalapolla = port;
+		delete[] writable;*/
+
+		/*const char *test = "pepe";
+
+		printf("antes de asignación\n");
+		const std::string p (test);
+		printf("despues de asignación\n");
+		printf("pintando = %s\n", p.c_str());
 		*/
-		payloader::Packager* packager = new payloader::Packager();
 		
 		printf("PUERTO ASIGNADO = %d\n",port);
 
-		const char *test = "pepe";
-
-		/*printf("antes de asignación\n");
-		const std::string p (test);
-		printf("despues de asignación");
-		printf("pintando   = %s\n", p.c_str());
-		*/
-/*
-		payloader::Sender* sender_rtsp = new payloader::Sender("localhost", (const std::string)std::string(port));
 
 		payloader::InputReader* reader = new payloader::InputReader(input, device);
+		payloader::Packager* packager = new payloader::Packager();
+		payloader::Sender* sender_rtsp = new payloader::Sender("localhost", str);
+
 
 		payloader::VideoCodecInfo mp4Info;
 		mp4Info.enabled = true;
@@ -140,7 +138,7 @@ int main(int argc, const char* argv[]) {
 
 		// common
 		packager->setSink(sender_rtsp);
-		reader->init();*/
+		reader->init();
 
 
 }
