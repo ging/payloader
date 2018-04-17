@@ -5,7 +5,6 @@
 #include <string>
 
 #include "libs/RtspReader_fromDisk.h"
-
 #include "libs/Decoder.h"
 #include "libs/Encoder.h"
 #include "libs/Receiver.h"
@@ -68,7 +67,7 @@ int main(int argc, const char* argv[]) {
 
 		payloader::InputReader* reader = new payloader::InputReader(input, device);
 		payloader::Packager* packager = new payloader::Packager();
-		payloader::Sender* sender_rtsp = new payloader::Sender("localhost", str);
+		payloader::Sender* sender_rtsp = new payloader::Sender("localhost", "3587");
 
 
 		payloader::VideoCodecInfo mp4Info;
