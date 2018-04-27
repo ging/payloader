@@ -60,9 +60,9 @@ class RtspReader_fromDisk {
 	    void DateHeader();
  		RTSP_CMD_TYPES Handle_RtspRequest(char const * aRequest, unsigned aRequestSize);
   		boost::thread sendStart_Thread_;
-  		const char*  PortGetter();
+  		long int PortGetter();
   		bool Done();
-  		const char* puerto;
+  		long int puerto;
   		
   		//boost::condition_variable cond_;
 		char   SDPBuf[1024];

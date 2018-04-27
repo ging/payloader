@@ -14,7 +14,7 @@ boost::array<char, 256> buf; // We use a boost::array to hold the received data.
 
 class PortReceiver{  
     public:  
-        virtual void tomaPuerto(const char* puerto) = 0;  
+        virtual void tomaPuerto(long int puerto) = 0;  
         virtual ~PortReceiver(){};  
 };  
 
@@ -34,11 +34,11 @@ PortReceiver *myparent;
 char *data;
 typedef boost::shared_ptr<tcp_connection> pointer;
 char buf_Date[200]; 
-const char* puerto = 0;
+long int puerto = 0;
 
 tcp_connection(boost::asio::io_service &io_service): socket_(io_service){
 }
-const char* getPort(){
+long int getPort(){
   return puerto;
 }
 
@@ -364,9 +364,8 @@ bool ParseRtspRequest(char const * aRequest, unsigned aRequestSize){
                     pCP[0] = 0x00;
                     m_ClientRTPPort  = atoi(CP);
                     m_ClientRTCPPort = m_ClientRTPPort + 1;
-                    puerto = (char *)(intptr_t)m_ClientRTPPort;
+                    puerto = (intptr_t)m_ClientRTPPort;
                     this->myparent->tomaPuerto(puerto);
-                    //printf("%d\n", puerto);
                 };
             };
         };
@@ -520,9 +519,9 @@ bool ParseRtspRequest(char const * aRequest, unsigned aRequestSize){
 class tcp_server : public PortReceiver{
 public:
     char* data;
-    const char* puerto = 0;
+    long int puerto = 0;
 
-  void tomaPuerto(const char* puerto){
+  void tomaPuerto(long int puerto){
     this->puerto = puerto;
   }
   // Constructor: initialises an acceptor to listen on TCP port 13.
@@ -534,7 +533,7 @@ public:
     // to wait for a new connection.
     start_accept();
   }
-  const char* getterData(){
+  long int getterData(){
     return puerto;
   }
   
@@ -546,6 +545,7 @@ private:
       tcp_connection::create(acceptor_.get_io_service());
 
       new_connection->registerParent(this);
+
 
     // initiates an asynchronous accept operation 
     // to wait for a new connection. 
@@ -564,6 +564,7 @@ private:
     if (!error)
     {   
       new_connection->start();
+      printf("Pruebo dentro");
       puerto = new_connection->getPort();
     }
     // Call start_accept() to initiate the next accept operation.

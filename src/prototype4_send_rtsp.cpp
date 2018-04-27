@@ -3,6 +3,7 @@
 #include <boost/asio.hpp>
 #include <iostream>
 #include <string>
+#include <sstream>
 
 #include "libs/RtspReader_fromDisk.h"
 #include "libs/Decoder.h"
@@ -39,35 +40,17 @@ int main(int argc, const char* argv[]) {
 	payloader::RtspReader_fromDisk* sessionCreator = new payloader::RtspReader_fromDisk(input, output, device);
 
 	if(sessionCreator->Done()){
-		const char *port = sessionCreator->PortGetter();
-		std::string str(port);
-		std::cout << str;
-		//const std::string& go = port
-		printf("pintando = %s\n", str.c_str());
-
-		/*//pasar std::string a char*
-		std::string str;
-		char * writable = new char[str.size() + 1];
-		std::copy(str.begin(), str.end(), writable);
-		writable[str.size()] = '\0'; // don't forget the terminating 0
-
-		// don't forget to free the string after finished using it
-		delete[] writable;*/
-
-		/*const char *test = "pepe";
-
-		printf("antes de asignación\n");
-		const std::string p (test);
-		printf("despues de asignación\n");
-		printf("pintando = %s\n", p.c_str());
-		*/
+		long int port = sessionCreator->PortGetter();
 		
-		printf("PUERTO ASIGNADO = %d\n",port);
+		printf("PUERTO ASIGNADO = %ld\n",port);
+		std::string str = std::to_string(port);
+		printf("PUERTO STRING = %s\n",str.c_str());
 
 
 		payloader::InputReader* reader = new payloader::InputReader(input, device);
 		payloader::Packager* packager = new payloader::Packager();
-		payloader::Sender* sender_rtsp = new payloader::Sender("localhost", "3587");
+
+		payloader::Sender* sender_rtsp = new payloader::Sender("localhost", std::to_string(port));
 
 
 		payloader::VideoCodecInfo mp4Info;

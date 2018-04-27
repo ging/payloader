@@ -175,7 +175,7 @@ void RtspReader_fromDisk::PortSetter(){
    const std::string& url = "localhost";
   sink_->init(url ,port);
 }
-const char* RtspReader_fromDisk::PortGetter(){
+long int RtspReader_fromDisk::PortGetter(){
   return puerto;
 }
 bool RtspReader_fromDisk::Done(){
@@ -204,7 +204,6 @@ void RtspReader_fromDisk::socketReciver() {
     //char* data = tcp_server.getterData();
     /*printf("FUERA:\n");
     std::cout.write(data, 64);//buscar len*/
-    printf("DEBE SER el pùerto: %d\n",server.getterData());
     puerto = server.getterData();
   }
   catch (std::exception& e)

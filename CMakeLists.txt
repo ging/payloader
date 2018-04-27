@@ -75,7 +75,7 @@ test_lib(${ZLIB})
 find_library(LZMA lzma)
 test_lib(${LZMA})
 
-find_library(AVRESAMP swresample)
+find_library(AVRESAMP resample)
 test_lib(${AVRESAMP})
 find_library(BZ2 bz2)
 test_lib(${BZ2})
