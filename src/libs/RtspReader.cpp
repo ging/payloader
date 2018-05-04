@@ -47,7 +47,7 @@ int RtspReader::init(){
 		ELOG_ERROR("Error opening source: %s", errbuff);
 		return res;
     }
-
+printf("OPEN DONE\n");
     ELOG_DEBUG("Finding stream info");
     res = avformat_find_stream_info(av_context_,NULL);
     ELOG_DEBUG("Finding stream info result %d", res);

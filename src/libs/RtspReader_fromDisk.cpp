@@ -172,7 +172,7 @@ void RtspReader_fromDisk::setSink(RtpReceiver* receiver) {
 }
 void RtspReader_fromDisk::PortSetter(){
    const std::string& port = (char *)(intptr_t) puerto;
-   const std::string& url = "localhost";
+   const std::string& url = "localhost";    
   sink_->init(url ,port);
 }
 long int RtspReader_fromDisk::PortGetter(){

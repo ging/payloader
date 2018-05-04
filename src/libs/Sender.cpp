@@ -7,9 +7,10 @@ namespace payloader {
 DEFINE_LOGGER(Sender, "Sender");
 
 Sender::Sender(const std::string url, const std::string port) {
+    printf("Iniciando sender\n");
     resolver_.reset(new udp::resolver(io_service_));
-    socket_.reset(new udp::socket(io_service_, udp::endpoint(udp::v4(), 0)));
-    query_.reset(new udp::resolver::query(udp::v4(), url.c_str(), port.c_str()));
+    socket_.reset(new udp::socket(io_service_, udp::endpoint(udp::v4(), 6971)));
+    query_.reset(new udp::resolver::query(udp::v4(), url.c_str(), port.c_str()));//abrimos socket udp, solo rtp sin rtsp por encima 
     iterator_ = resolver_->resolve(*query_);
 }
 
@@ -47,6 +48,7 @@ void Sender::receiveRtpPacket(unsigned char* inBuff, int buffSize) {
 
 void Sender::sendLoop(){
     while (sending_ ) {
+        //printf("enviando desde sender loop al puerto: %s\n", iterator_);
         boost::unique_lock<boost::mutex> lock(queueMutex_);
         while (sendQueue_.size() == 0) {
             cond_.wait(lock);
@@ -61,7 +63,6 @@ void Sender::sendLoop(){
 
 int Sender::sendData(char* buffer, int len) {
     ELOG_DEBUG("Sending socket %d", len);
-
     socket_->send_to(boost::asio::buffer(buffer, len), *iterator_);
     return len;
 }

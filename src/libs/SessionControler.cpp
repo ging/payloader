@@ -10,6 +10,7 @@
 
 
 using boost::asio::ip::tcp;
+using boost::asio::ip::udp;
 boost::array<char, 256> buf; // We use a boost::array to hold the received data. 
 
 class PortReceiver{  
@@ -80,7 +81,7 @@ char   response[1024];                     // SDP string size
 
 void start(){
 
-  socket_.async_read_some(boost::asio::buffer(buf),
+  socket_.async_read_some(boost::asio::buffer(buf),//lo recivido se almacena en buff (por el 8554)
       boost::bind(&tcp_connection::handle_read, shared_from_this(),
         boost::asio::placeholders::error,
         boost::asio::placeholders::bytes_transferred));
@@ -91,35 +92,35 @@ private:
 
   // handle_write() is responsible for any further actions 
   // for this client connection.
-  void handle_write(const boost::system::error_code& /*error*/,
+void handle_write(const boost::system::error_code& /*error*/,
       size_t /*bytes_transferred*/){
-  }
-   void handle_read(const boost::system::error_code& error, size_t /*bytes_transferred*/){
-    data = buf.data();
-    size_t len = strlen(data);
+}
 
-    //std::cout.write(data, len);//buscar len
-    RTSP_CMD_TYPES C = Handle_RtspRequest(data,len);
-    
-    if(connected == false){ 
-    socket_.async_read_some(boost::asio::buffer(buf),
+void handle_read(const boost::system::error_code& error, size_t /*bytes_transferred*/){
+  data = buf.data();
+  size_t len = strlen(data);
+  //std::cout.write(data, len);//buscar len
+  RTSP_CMD_TYPES C = Handle_RtspRequest(data,len);//Gestionamos la respuesta
+  if(connected == false){ 
+  socket_.async_read_some(boost::asio::buffer(buf),//Volvemos a escuchar por el 8554 si no hay conexión establecida.
       boost::bind(&tcp_connection::handle_read, shared_from_this(),
         boost::asio::placeholders::error,
         boost::asio::placeholders::bytes_transferred));
     }
-  }
-  RTSP_CMD_TYPES Handle_RtspRequest(char const * aRequest, unsigned aRequestSize){
-          if (ParseRtspRequest(aRequest,aRequestSize)){
-             DateHeader();
-              switch (m_RtspCmdType)
-              {
-                  case RTSP_OPTIONS:  { Handle_RtspOPTION();   break; };
-                  case RTSP_DESCRIBE: { Handle_RtspDESCRIBE(); break; };
-                  case RTSP_SETUP: { Handle_RtspSETUP(); break; };
-                  case RTSP_PLAY:     { Handle_RtspPLAY();     break; };
-                  default: {};
-              };
-          };
+}
+
+RTSP_CMD_TYPES Handle_RtspRequest(char const * aRequest, unsigned aRequestSize){
+
+  if(ParseRtspRequest(aRequest,aRequestSize)){
+    DateHeader();
+      switch (m_RtspCmdType){
+        case RTSP_OPTIONS:  { Handle_RtspOPTION();   break; };
+        case RTSP_DESCRIBE: { Handle_RtspDESCRIBE(); break; };
+        case RTSP_SETUP: { Handle_RtspSETUP(); break; };
+        case RTSP_PLAY:     { Handle_RtspPLAY();     break; };
+        default: {};
+    };
+  };
 
           return m_RtspCmdType;
 };
@@ -188,6 +189,17 @@ void Handle_RtspDESCRIBE(){
     strcpy(OBuf,m_URLHostPort);
     ColonPtr = strstr(OBuf,":");
     if (ColonPtr != nullptr) ColonPtr[0] = 0x00;
+
+  /* snprintf(SDPBuf,sizeof(SDPBuf),
+        "v=0\r\n"
+        "o=- %d 1 IN IP4 %s\r\n"           
+        "s=\r\n"   
+        "t=0 0\r\n"                                            // start / stop - 0 -> unbounded and permanent session
+        "m=video 0 RTP/AVP 26\r\n"                             // currently we just handle UDP sessions
+        "c=IN IP4 0.0.0.0\r\n",
+        rand(),
+        OBuf);*/
+
 
     snprintf(SDPBuf,sizeof(SDPBuf),
        "v=0\r\n"
@@ -279,13 +291,37 @@ void Handle_RtspSETUP()
 {
     char response[1024];
     char Transport[255];
+    boost::array<char, 256> buff; 
 
+    /*boost::asio::io_service io_service_;
+    new tcp::resolver(io_service_);
+    new tcp::socket(io_service_, tcp::endpoint(tcp::v4(), 6970));
+      new tcp::resolver::query(tcp::v4(), "localhost","6970");//abrimos socket udp, solo rtps */
+   /* boost::asio::io_service io_service1;
+      boost::asio::ip::tcp::socket socket1(io_service1);
+  socket1.open(boost::asio::ip::tcp::v4());
+  socket1.bind(boost::asio::ip::tcp::endpoint(
+        boost::asio::ip::tcp::v4(), 6970));
+   boost::asio::io_service io_service2;
+      boost::asio::ip::tcp::socket socket2(io_service2);
+  socket2.open(boost::asio::ip::tcp::v4());
+  socket2.bind(boost::asio::ip::tcp::endpoint(
+        boost::asio::ip::tcp::v4(), 6971));
+  printf("ABRO 6970\n");
+  socket1.async_read_some(boost::asio::buffer(buf),//lo recivido se almacena en buff (por el 8554)
+      boost::bind(&tcp_connection::handle_read, shared_from_this(),
+        boost::asio::placeholders::error,
+        boost::asio::placeholders::bytes_transferred));
+        boost::system::error_code error;
+*/
     // simulate SETUP server response
-    if (m_TcpTransport)
+    if (m_TcpTransport){
+      printf("TCP streaming: %s\n", m_TcpTransport);
         snprintf(Transport,sizeof(Transport),"RTP/AVP/TCP;unicast;interleaved=0-1");
-    else
-        snprintf(Transport,sizeof(Transport),
-            "RTP/AVP;unicast;destination=127.0.0.1;source=127.0.0.1;client_port=%i-%i;server_port=%i-%i",
+    }
+    else{
+     snprintf(Transport,sizeof(Transport),
+            "RTP/UDP;unicast;destination=127.0.0.1;source=127.0.0.1;client_port=%i-%i;server_port=%i-%i",
             m_ClientRTPPort,
             m_ClientRTCPPort,
             m_RtpServerPort,
@@ -307,6 +343,7 @@ void Handle_RtspSETUP()
         boost::bind(&tcp_connection::handle_write, shared_from_this(),
           boost::asio::placeholders::error,
           boost::asio::placeholders::bytes_transferred));
+  }
 }
 void Handle_RtspPLAY()
 {
@@ -524,29 +561,24 @@ public:
   void tomaPuerto(long int puerto){
     this->puerto = puerto;
   }
-  // Constructor: initialises an acceptor to listen on TCP port 13.
-  tcp_server(boost::asio::io_service& io_service)
-    : acceptor_(io_service, tcp::endpoint(tcp::v4(), 8554))
+  // Constructor: initialises an acceptor to listen on TCP port 8554.
+  tcp_server(boost::asio::io_service& io_service) : acceptor_(io_service, tcp::endpoint(tcp::v4(), 8554))//Creamos el soocket en el puerto 8554 escuchando tcp para la conexión rtsp.
   {
     // start_accept() creates a socket and 
     // initiates an asynchronous accept operation 
     // to wait for a new connection.
     start_accept();
   }
-  long int getterData(){
+
+long int getterData(){
     return puerto;
-  }
+}
   
 private:
-  void start_accept()
-  {
+  void start_accept(){
     // creates a socket
-    tcp_connection::pointer new_connection =
-      tcp_connection::create(acceptor_.get_io_service());
-
-      new_connection->registerParent(this);
-
-
+    tcp_connection::pointer new_connection = tcp_connection::create(acceptor_.get_io_service());
+    new_connection->registerParent(this);
     // initiates an asynchronous accept operation 
     // to wait for a new connection. 
     acceptor_.async_accept(new_connection->socket(),
@@ -554,17 +586,11 @@ private:
           boost::asio::placeholders::error));
   
   }
-
-
   // handle_accept() is called when the asynchronous accept operation 
   // initiated by start_accept() finishes. It services the client request
-  void handle_accept(tcp_connection::pointer new_connection,
-      const boost::system::error_code& error)
-  {
-    if (!error)
-    {   
+  void handle_accept(tcp_connection::pointer new_connection, const boost::system::error_code& error){
+    if (!error){   
       new_connection->start();
-      printf("Pruebo dentro");
       puerto = new_connection->getPort();
     }
     // Call start_accept() to initiate the next accept operation.

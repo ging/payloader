@@ -19,7 +19,7 @@ int main(int argc, const char* argv[]) {
 
 	if (argc != 2) {
         printf("usage: %s input\n device"
-               "Example program to input-output(fijo) media to UDP.\n"
+               "Example program to output media argv[1] to UDP with url rtsp://138.4.7.72:8554/ej.\n"
                "\n", argv[0]);
         exit(1);
     }
@@ -44,12 +44,10 @@ int main(int argc, const char* argv[]) {
 		
 		printf("PUERTO ASIGNADO = %ld\n",port);
 		std::string str = std::to_string(port);
-		printf("PUERTO STRING = %s\n",str.c_str());
-
+		//printf("PUERTO STRING = %s\n",str.c_str());
 
 		payloader::InputReader* reader = new payloader::InputReader(input, device);
 		payloader::Packager* packager = new payloader::Packager();
-
 		payloader::Sender* sender_rtsp = new payloader::Sender("localhost", std::to_string(port));
 
 
