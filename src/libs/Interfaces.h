@@ -7,6 +7,12 @@ extern "C" {
 
 namespace payloader {
 
+class PortReceiver{  
+    public:  
+        virtual void tomaPuerto(long int puerto) = 0;  
+        virtual ~PortReceiver(){};  
+};  
+
 class FrameReceiver {
 public:
 	virtual void receiveFrame(AVFrame* frame, AVMediaType type) = 0;

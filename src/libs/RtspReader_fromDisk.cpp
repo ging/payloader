@@ -1,5 +1,5 @@
 
-#include "SessionControler.cpp"
+#include "RtspReader_fromDisk.h"
 
 
 extern "C" {
@@ -18,8 +18,6 @@ RtspReader_fromDisk::RtspReader_fromDisk(const std::string& url, const std::stri
     init();
 
 }
-
-
 RtspReader_fromDisk::~RtspReader_fromDisk(){
     avformat_close_input(&ifmt_ctx);
 }
@@ -161,7 +159,8 @@ int RtspReader_fromDisk::init(){
      ELOG_DEBUG("Video stream index %d", video_stream_index_);
 
     //this->startReading();
-     this->socketReciver();
+    ELOG_DEBUG("Archivo cargado para envio.");
+    //this->socketReciver();
 
     return true;
 
@@ -178,9 +177,7 @@ void RtspReader_fromDisk::PortSetter(){
 long int RtspReader_fromDisk::PortGetter(){
   return puerto;
 }
-bool RtspReader_fromDisk::Done(){
-  return connected;
-}
+
 void RtspReader_fromDisk::SenderStart(){
   
     if(puerto != NULL){
@@ -191,25 +188,22 @@ void RtspReader_fromDisk::SenderStart(){
 
 void RtspReader_fromDisk::socketReciver() {
    try{
-     ELOG_DEBUG("Escuchando... en el 8554");
-    // We need to create a server object to accept incoming client connections.
-    boost::asio::io_service io_service;
-
-    // The io_service object provides I/O services, such as sockets, 
-    // that the server object will use.
-    tcp_server server(io_service);
-    // Run the io_service object to perform asynchronous operations.
-    io_service.run();
-    //char* data = tcp_server.getterData();
-    /*printf("FUERA:\n");
-    std::cout.write(data, 64);//buscar len*/
-    puerto = server.getterData();
-  }
-  catch (std::exception& e)
-  {
-    printf("Saliengo de fuera, ALGO HA PETADO\n");
-    std::cerr << e.what() << std::endl;
-  }
+        // We need to create a server object to accept incoming client connections.
+        //boost::asio::io_service io_service;
+        // The io_service object provides I/O services, such as sockets, 
+        // that the server object will use.
+        //tcp_server server(io_service);
+        // Run the io_service object to perform asynchronous operations.
+       // io_service.run();
+        //ELOG_DEBUG("Escuchando... en el 8554");
+        //char* data = tcp_server.getterData();
+        /*printf("FUERA:\n");
+        std::cout.write(data, 64);//buscar len*/
+        //puerto = server.getterData();
+    }catch (std::exception& e){
+        /*printf("Saliengo de fuera, ALGO HA PETADO\n");
+        std::cerr << e.what() << std::endl;*/
+    }
 }
 void RtspReader_fromDisk::startReading() {
     
@@ -236,33 +230,11 @@ void RtspReader_fromDisk::startReading() {
 }
 
 void RtspReader_fromDisk::deliverLoop() {
-    // while (reading_ == true) {
-    //  queue_mutex_.lock();
-    //  if (packet_queue_.size() > 0) {
-    //      ELOG_DEBUG("Delivering packet %ld", packet_queue_.front().pts);
-
-    //      AVMediaType type = AVMEDIA_TYPE_UNKNOWN;
-    //      if (packet_queue_.front().stream_index == video_stream_index_)
-    //          type = AVMEDIA_TYPE_VIDEO;
-    //      else if (packet_queue_.front().stream_index == audio_stream_index_)
-    //          type = AVMEDIA_TYPE_AUDIO;
-
-    //      if (sink_ != NULL && packet_queue_.front().pts > 0) {
-    //          sink_->receivePacket(packet_queue_.front(), type);
-    //      }
-
-    //      packet_queue_.pop();
-    //      queue_mutex_.unlock();
-    //  } else {
-    //      queue_mutex_.unlock();
-    //      usleep(DELIVERING_INTERVAL);
-    //  }
-    // }
 }
 
 void RtspReader_fromDisk::writeResponse(){
   printf("socket abierto enviando\n\n");
-  printf("Contestamos al %d con: \n%s\n", m_RtspCmdType,response);
+  //printf("Contestamos al %d con: \n%s\n", m_RtspCmdType,response);
   /*boost::system::error_code ignored_error;
   std:string response1 = response;
   boost::asio::write(socket, boost::asio::buffer(response1), ignored_error); */
