@@ -184,7 +184,6 @@ bool RtspReader_fromDisk::Done(){
 void RtspReader_fromDisk::SenderStart(){
   
     if(puerto != NULL){
-      printf("Done\n");
       this->PortSetter();
     }
   

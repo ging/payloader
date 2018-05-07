@@ -34,12 +34,11 @@ int main(int argc, const char* argv[]) {
     output = "rtsp://138.4.7.72:8554/ej";//rtsp://138.4.7.72:8554/ej
    	//output = "rtp://localhost/desktop/ej/";//rtsp://138.4.7.72:8554/ej
    	//output = "prueba_a_disco.avi";
-
-   
-	
 	payloader::RtspReader_fromDisk* sessionCreator = new payloader::RtspReader_fromDisk(input, output, device);
+   
+	/*if(sessionCreator->Done()){
+		//crear hebra que se encargue del envío
 
-	if(sessionCreator->Done()){
 		long int port = sessionCreator->PortGetter();
 		
 		printf("PUERTO ASIGNADO = %ld\n",port);
@@ -121,6 +120,6 @@ int main(int argc, const char* argv[]) {
 		reader->init();
 
 
-}
+}*/
 
 }

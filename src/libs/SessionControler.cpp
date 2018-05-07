@@ -2,6 +2,9 @@
 #include <iostream>
 #include <string>
 #include <boost/bind.hpp>
+#include  <pthread.h>
+#include  <stdlib.h>
+#include  <unistd.h>
 #include <boost/shared_ptr.hpp>
 #include <boost/enable_shared_from_this.hpp>
 #include <boost/asio.hpp>
@@ -9,9 +12,121 @@
 #include "RtspReader_fromDisk.h"
 
 
+
+#include "Decoder.h"
+#include "Encoder.h"
+#include "Receiver.h"
+#include "Sender.h"
+#include "Codecs.h"
+#include "InputReader.h"
+#include "Packager.h"
+
+
 using boost::asio::ip::tcp;
 using boost::asio::ip::udp;
 boost::array<char, 256> buf; // We use a boost::array to hold the received data. 
+
+struct param{
+  long int puerto;
+};
+
+void* thread_function01(void* arg) {
+    
+
+    //crear hebra que se encargue del envío
+  
+    //long int port = mensa->puerto;
+  
+  long int port = *((long int*) arg);
+    
+    printf("PUERTO ASIGNADO = %ld\n",port);
+    std::string str = std::to_string(port);
+    //printf("PUERTO STRING = %s\n",str.c_str());
+
+    payloader::InputReader* reader = new payloader::InputReader("prueba_a_disco.avi", NULL);
+    payloader::Packager* packager = new payloader::Packager();
+    payloader::Sender* sender_rtsp = new payloader::Sender("localhost", std::to_string(port));
+
+
+    payloader::VideoCodecInfo mp4Info;
+    mp4Info.enabled = true;
+    mp4Info.codec = AV_CODEC_ID_MPEG4;
+      mp4Info.width = 704;
+      mp4Info.height = 396;
+      mp4Info.bitRate = 48000;
+
+      payloader::VideoCodecInfo mjpegInfo;
+    mjpegInfo.enabled = true;
+    mjpegInfo.codec = AV_CODEC_ID_MJPEG;
+      mjpegInfo.width = 640;
+      mjpegInfo.height = 480;
+      mjpegInfo.bitRate = 4800;
+
+      payloader::VideoCodecInfo rv32Info;
+    rv32Info.enabled = true;
+    rv32Info.codec = AV_CODEC_ID_RAWVIDEO;
+      rv32Info.width = 704;
+      rv32Info.height = 396;
+      rv32Info.bitRate = 4800;
+      rv32Info.pix_fmt = AV_PIX_FMT_YUV420P;
+
+      payloader::VideoCodecInfo lheInfo;
+    lheInfo.enabled = true;
+    lheInfo.codec = AV_CODEC_ID_MLHE;
+      lheInfo.width = 1680;
+      lheInfo.height = 1050;
+      lheInfo.bitRate = 48000;
+
+      // common
+    packager->init();
+    //receiver->setSink();
+    //receiver->init();
+
+    sender_rtsp->init();
+
+    // 4a sin transcodificación
+    reader->setSink(packager);
+       
+
+    // 4b con transcodificación
+    // encoder->init({}, lheInfo);
+    // decoder->init({}, mp4Info);
+    // reader->setSink(decoder);
+    // decoder->setSink(encoder);
+    // encoder->setSink(packager);
+
+    // 4c desde webcam MJPEG
+    // encoder->init({}, lheInfo);
+    // decoder->init({}, mjpegInfo);
+    // reader->setSink(decoder);
+    // decoder->setSink(encoder);
+    // encoder->setSink(packager);
+
+    // 4e desde desktop
+    // encoder->init({}, lheInfo);
+    // decoder->init({}, rv32Info);
+    // reader->setSink(decoder);
+    // decoder->setSink(encoder);
+    // encoder->setSink(packager);
+
+
+    //Rtsp: InputReader -> sender_rtsp
+    
+
+    // common
+    packager->setSink(sender_rtsp);
+    reader->init();
+
+  
+ 
+  return NULL;
+}
+
+
+
+
+
+
 
 class PortReceiver{  
     public:  
@@ -101,11 +216,12 @@ void handle_read(const boost::system::error_code& error, size_t /*bytes_transfer
   size_t len = strlen(data);
   //std::cout.write(data, len);//buscar len
   RTSP_CMD_TYPES C = Handle_RtspRequest(data,len);//Gestionamos la respuesta
+
   if(connected == false){ 
-  socket_.async_read_some(boost::asio::buffer(buf),//Volvemos a escuchar por el 8554 si no hay conexión establecida.
-      boost::bind(&tcp_connection::handle_read, shared_from_this(),
-        boost::asio::placeholders::error,
-        boost::asio::placeholders::bytes_transferred));
+    socket_.async_read_some(boost::asio::buffer(buf),//Volvemos a escuchar por el 8554 si no hay conexión establecida.
+        boost::bind(&tcp_connection::handle_read, shared_from_this(),
+          boost::asio::placeholders::error,
+          boost::asio::placeholders::bytes_transferred));
     }
 }
 
@@ -345,8 +461,7 @@ void Handle_RtspSETUP()
           boost::asio::placeholders::bytes_transferred));
   }
 }
-void Handle_RtspPLAY()
-{
+void Handle_RtspPLAY(){
     char   response[1024];
     // simulate SETUP server response
     snprintf(response,sizeof(response),
@@ -360,6 +475,7 @@ void Handle_RtspPLAY()
         m_RtspSessionID);
 
     connected = true;
+    printf("PLAY\n");
 
     std::string response1 = response;
     boost::asio::async_write(socket_, boost::asio::buffer(response1),
@@ -367,6 +483,7 @@ void Handle_RtspPLAY()
           boost::asio::placeholders::error,
           boost::asio::placeholders::bytes_transferred));
 }
+
 bool ParseRtspRequest(char const * aRequest, unsigned aRequestSize){
     char     CmdName[RTSP_PARAM_STRING_MAX];
     char     CurRequest[RTSP_BUFFER_SIZE];
@@ -557,6 +674,7 @@ class tcp_server : public PortReceiver{
 public:
     char* data;
     long int puerto = 0;
+    pthread_t mithread;
 
   void tomaPuerto(long int puerto){
     this->puerto = puerto;
@@ -591,10 +709,20 @@ private:
   void handle_accept(tcp_connection::pointer new_connection, const boost::system::error_code& error){
     if (!error){   
       new_connection->start();
-      puerto = new_connection->getPort();
+      //Hay que mandar esto a otra hebra para mantener la conexión tcp
+     
+        puerto = new_connection->getPort();
+        //puerto = 3000;
+        //struct param param1 = {puerto};
+        printf("puerto es: %ld\n", puerto);
+        pthread_create( &mithread, NULL, &thread_function01,  &puerto);
+         
+        
     }
     // Call start_accept() to initiate the next accept operation.
-    //start_accept();
+    start_accept();
   }
   tcp::acceptor acceptor_;
 };
+
+

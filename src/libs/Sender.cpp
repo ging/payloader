@@ -9,7 +9,7 @@ DEFINE_LOGGER(Sender, "Sender");
 Sender::Sender(const std::string url, const std::string port) {
     printf("Iniciando sender\n");
     resolver_.reset(new udp::resolver(io_service_));
-    socket_.reset(new udp::socket(io_service_, udp::endpoint(udp::v4(), 6971)));
+    socket_.reset(new udp::socket(io_service_, udp::endpoint(udp::v4(), 6970)));
     query_.reset(new udp::resolver::query(udp::v4(), url.c_str(), port.c_str()));//abrimos socket udp, solo rtp sin rtsp por encima 
     iterator_ = resolver_->resolve(*query_);
 }
@@ -63,6 +63,43 @@ void Sender::sendLoop(){
 
 int Sender::sendData(char* buffer, int len) {
     ELOG_DEBUG("Sending socket %d", len);
+
+/*char        RtpBuf[2048];
+ int m_SequenceNumber = 0;
+  int  m_Timestamp      = 0;
+memset(RtpBuf,0x00,sizeof(RtpBuf));
+    // Prepare the first 4 byte of the packet. This is the Rtp over Rtsp header in case of TCP based transport
+    RtpBuf[0]  = '$';        // magic number
+    RtpBuf[1]  = 0;          // number of multiplexed subchannel on RTPS connection - here the RTP channel
+    RtpBuf[2]  = (48 & 0x0000FF00) >> 8;
+    RtpBuf[3]  = (48 & 0x000000FF);
+    // Prepare the 12 byte RTP header
+    RtpBuf[4]  = 0x80;                               // RTP version
+    RtpBuf[5]  = 0x9a;                               // JPEG payload (26) and marker bit
+    RtpBuf[7]  = m_SequenceNumber & 0x0FF;           // each packet is counted with a sequence counter
+    RtpBuf[6]  = m_SequenceNumber >> 8;
+    RtpBuf[8]  = (m_Timestamp & 0xFF000000) >> 24;   // each image gets a timestamp
+    RtpBuf[9]  = (m_Timestamp & 0x00FF0000) >> 16;
+    RtpBuf[10] = (m_Timestamp & 0x0000FF00) >> 8;
+    RtpBuf[11] = (m_Timestamp & 0x000000FF);
+    RtpBuf[12] = 0x13;                               // 4 byte SSRC (sychronization source identifier)
+    RtpBuf[13] = 0xf9;                               // we just an arbitrary number here to keep it simple
+    RtpBuf[14] = 0x7e;
+    RtpBuf[15] = 0x67;
+    // Prepare the 8 byte payload JPEG header
+    RtpBuf[16] = 0x00;                               // type specific
+    RtpBuf[17] = 0x00;                               // 3 byte fragmentation offset for fragmented images
+    RtpBuf[18] = 0x00;
+    RtpBuf[19] = 0x00;
+    RtpBuf[20] = 0x01;                               // type
+    RtpBuf[21] = 0x5e;                               // quality scale factor
+    RtpBuf[22] = 0x06;                           // width  / 8 -> 48 pixel
+    RtpBuf[23] = 0x04;   
+
+m_SequenceNumber++;                              // prepare the packet counter for the next packet
+    m_Timestamp += 3600;    
+
+*/
     socket_->send_to(boost::asio::buffer(buffer, len), *iterator_);
     return len;
 }
