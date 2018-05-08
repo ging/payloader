@@ -4,16 +4,16 @@ std::string make_daytime_string(){
   std::time_t now = std::time(0);
   return std::ctime(&now);
 }
-
+ pthread_mutex_t mutex;
 // Using shared_ptr and enable_shared_from_this 
 // because we want to keep the tcp_connection object alive 
 // as long as there is an operation that refers to it.
 namespace payloader { 
 DEFINE_LOGGER(TcpConnection, "TcpConnection");
 // Constructor: initialises an acceptor to listen on TCP port 8554.
-TcpConnection::TcpConnection(): public boost::enable_shared_from_this<tcp_connection>{//Creamos el soocket en el puerto 8554 escuchando tcp para la conexión rtsp.
+TcpConnection::TcpConnection(boost::asio::io_service &io_service, payloader::Streamer* streamer): socket_(io_service), m_Streamer(streamer){//Creamos el soocket en el puerto 8554 escuchando tcp para la conexión rtsp.
 
-        m_RtspSessionID  = rand() << 16;         // create a session ID
+    m_RtspSessionID  = rand() << 16;         // create a session ID
     m_RtspSessionID |= rand();
     m_RtspSessionID |= 0x80000000;         
     m_StreamID       = -1;
@@ -31,16 +31,13 @@ TcpConnection::TcpConnection(): public boost::enable_shared_from_this<tcp_connec
     memset(m_URLHostPort,  0x00, sizeof(m_URLHostPort));
     m_ContentLength  =  0;
 
-  // start_accept() creates a socket and 
-  // initiates an asynchronous accept operation 
-  // to wait for a new connection.
-  start_accept();
-}
+    pthread_mutex_init(&mutex,NULL);
 
-TcpConnection::TcpConnection(boost::asio::io_service &io_service, payloader::Streamer m_Streamer): socket_(io_service), m_Streamer(m_Streamer){
 }
-TcpConnection::~TcpConnection(){
-    
+/*
+TcpConnection::TcpConnection(boost::asio::io_service &io_service, payloader::Streamer m_Streamer): socket_(io_service), m_Streamer(m_Streamer){
+}*/
+TcpConnection::~TcpConnection(){  
 }
 
 long int TcpConnection::getPort(){
@@ -54,10 +51,14 @@ void TcpConnection::DateHeader() {
     time_t tt = time(NULL);
     strftime(buf_Date, sizeof buf_Date, "Date: %a, %b %d %Y %H:%M:%S GMT", gmtime(&tt));
 }
-static pointer TcpConnection::create(boost::asio::io_service& io_service){
-  return pointer(new tcp_connection(io_service));
+pthread_mutex_t TcpConnection::getMutex() {
+    return mutex;
 }
-payloader::Streamer TcpConnection::getStreamer(){
+typedef boost::shared_ptr<TcpConnection> pointer;
+boost::shared_ptr<TcpConnection> TcpConnection::create(boost::asio::io_service& io_service, payloader::Streamer *m_Streamer){
+  return boost::shared_ptr<TcpConnection>(new TcpConnection(io_service,m_Streamer));
+}
+payloader::Streamer* TcpConnection::getStreamer(){
     return m_Streamer;
 }
 tcp::socket& TcpConnection::socket(){
@@ -65,7 +66,7 @@ tcp::socket& TcpConnection::socket(){
 }
 void TcpConnection::start(){
   socket_.async_read_some(boost::asio::buffer(buf),//lo recivido se almacena en buff (por el 8554)
-      boost::bind(&tcp_connection::handle_read, shared_from_this(),
+      boost::bind(&TcpConnection::handle_read, shared_from_this(),
         boost::asio::placeholders::error,
         boost::asio::placeholders::bytes_transferred));
         boost::system::error_code error;
@@ -78,18 +79,24 @@ void TcpConnection::start(){
 void TcpConnection::handle_write(const boost::system::error_code& /*error*/, size_t /*bytes_transferred*/){
 }
 
-RTSP_CMD_TYPES TcpConnection::handle_read(const boost::system::error_code& error, size_t /*bytes_transferred*/){
-  data = buf.data();
-  size_t len = strlen(data);
+void TcpConnection::handle_read(const boost::system::error_code& error, size_t /*bytes_transferred*/){
+    data = buf.data();
+    size_t len = strlen(data);
+    pthread_mutex_trylock(&mutex);
+    printf("Mutex locked durante negociacion\n");
   //std::cout.write(data, len);//buscar len
-  RTSP_CMD_TYPES C = Handle_RtspRequest(data,len);//Gestionamos la respuesta
-  if(connected == false){ 
+    C = Handle_RtspRequest(data,len);//Gestionamos la respuesta
+    pthread_mutex_unlock(&mutex);
+    printf("Mutex unlocked durante negociacion\n");
+    if(connected == false){ 
     socket_.async_read_some(boost::asio::buffer(buf),//Volvemos a escuchar por el 8554 si no hay conexión establecida.
-        boost::bind(&tcp_connection::handle_read, shared_from_this(),
+        boost::bind(&TcpConnection::handle_read, shared_from_this(),
           boost::asio::placeholders::error,
           boost::asio::placeholders::bytes_transferred));
     }
-return C;
+};
+RTSP_CMD_TYPES TcpConnection::getC(){
+    return C;
 }
 
 RTSP_CMD_TYPES TcpConnection::Handle_RtspRequest(char const * aRequest, unsigned aRequestSize){
@@ -120,7 +127,7 @@ void TcpConnection::Handle_RtspOPTION(){
     std::string response1 = response;
 
     boost::asio::async_write(socket_, boost::asio::buffer(response1),
-    boost::bind(&tcp_connection::handle_write, shared_from_this(),
+    boost::bind(&TcpConnection::handle_write, shared_from_this(),
       boost::asio::placeholders::error,
       boost::asio::placeholders::bytes_transferred));
 }
@@ -142,7 +149,7 @@ void TcpConnection::Handle_RtspDESCRIBE(){
     m_CSeq, 
     buf_Date);
   boost::asio::async_write(socket_, boost::asio::buffer(response),
-      boost::bind(&tcp_connection::handle_write, shared_from_this(),
+      boost::bind(&TcpConnection::handle_write, shared_from_this(),
         boost::asio::placeholders::error,
         boost::asio::placeholders::bytes_transferred)); 
     return;
@@ -247,7 +254,7 @@ void TcpConnection::Handle_RtspDESCRIBE(){
    std::string response1 = response;
 
     boost::asio::async_write(socket_, boost::asio::buffer(response1),
-        boost::bind(&tcp_connection::handle_write, shared_from_this(),
+        boost::bind(&TcpConnection::handle_write, shared_from_this(),
           boost::asio::placeholders::error,
           boost::asio::placeholders::bytes_transferred));
   
@@ -288,12 +295,13 @@ m_Streamer->InitTransport(m_ClientRTPPort,m_ClientRTCPPort,m_TcpTransport);
         snprintf(Transport,sizeof(Transport),"RTP/AVP/TCP;unicast;interleaved=0-1");
     }
     else{
+          printf("TCP streaming: %s, UDP ready.\n", m_TcpTransport);
      snprintf(Transport,sizeof(Transport),
             "RTP/UDP;unicast;destination=127.0.0.1;source=127.0.0.1;client_port=%i-%i;server_port=%i-%i",
             m_ClientRTPPort,
             m_ClientRTCPPort,
-            m_RtpServerPort,
-            m_RtcpServerPort
+            m_Streamer->GetRtpServerPort(),
+            m_Streamer->GetRtcpServerPort()
             );
     snprintf(response,sizeof(response),
         "RTSP/1.0 200 OK\r\nCSeq: %s\r\n"
@@ -306,13 +314,13 @@ m_Streamer->InitTransport(m_ClientRTPPort,m_ClientRTCPPort,m_TcpTransport);
         m_RtspSessionID);
 
     std::string response1 = response;
-    printf("%s\n",response );
+    //printf("%s\n",response );
     boost::asio::async_write(socket_, boost::asio::buffer(response1),
-        boost::bind(&tcp_connection::handle_write, shared_from_this(),
+        boost::bind(&TcpConnection::handle_write, shared_from_this(),
           boost::asio::placeholders::error,
           boost::asio::placeholders::bytes_transferred));
   }
-}
+};
 void TcpConnection::Handle_RtspPLAY(){
     char   response[1024];
     // simulate SETUP server response
@@ -331,10 +339,10 @@ void TcpConnection::Handle_RtspPLAY(){
 
     std::string response1 = response;
     boost::asio::async_write(socket_, boost::asio::buffer(response1),
-        boost::bind(&tcp_connection::handle_write, shared_from_this(),
+        boost::bind(&TcpConnection::handle_write, shared_from_this(),
           boost::asio::placeholders::error,
           boost::asio::placeholders::bytes_transferred));
-}
+};
 
 bool TcpConnection::ParseRtspRequest(char const * aRequest, unsigned aRequestSize){
     char     CmdName[RTSP_PARAM_STRING_MAX];
@@ -513,8 +521,9 @@ bool TcpConnection::ParseRtspRequest(char const * aRequest, unsigned aRequestSiz
     return true;
 };
 
-tcp::socket socket_;
-std::string m_message;
+
 };
+
+
 
 

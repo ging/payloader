@@ -1,24 +1,4 @@
-#include <ctime>
-#include <iostream>
-#include <string>
-#include <boost/bind.hpp>
-#include  <pthread.h>
-#include  <stdlib.h>
-#include  <unistd.h>
-#include <boost/shared_ptr.hpp>
-#include <boost/enable_shared_from_this.hpp>
-#include <boost/asio.hpp>
-#include <boost/array.hpp> 
-
-
-
-#include "Decoder.h"
-#include "Encoder.h"
-#include "Receiver.h"
-#include "Sender.h"
-#include "Codecs.h"
-#include "InputReader.h"
-#include "Packager.h"
+#include "Streamer.h"
 
 
 using boost::asio::ip::tcp;
@@ -86,11 +66,11 @@ void Streamer::InitTransport(u_short aRtpPort, u_short aRtcpPort, bool TCP)
                 }
                 else
                 {
-                    closesocket(m_RtpSocket);
-                    closesocket(m_RtcpSocket);
+                    close(m_RtpSocket);
+                    close(m_RtcpSocket);
                 };
             }
-            else closesocket(m_RtpSocket);
+            else close(m_RtpSocket);
         };
     };
 };
@@ -107,7 +87,7 @@ u_short Streamer::GetRtcpServerPort()
 
 //void* thread_function01(void* arg) {
     
-Streamer::StartStreaming(){
+void Streamer::StartStreaming(){
     //crear hebra que se encargue del envío
   
     //long int port = mensa->puerto;
@@ -163,7 +143,7 @@ Streamer::StartStreaming(){
 
   
  
-  return NULL;
+  return;
 }
 
 }

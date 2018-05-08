@@ -9,8 +9,11 @@
 #include <boost/shared_ptr.hpp>
 #include <cstdlib>
 #include <iostream>
+#include <pthread.h>
+#include <stdio.h>
 
 using namespace std;
+using namespace boost::system;
 
 namespace payloader {
 
@@ -21,12 +24,13 @@ class TcpServer : public PortReceiver {
 		virtual ~TcpServer();
 		long int getterData();
 		void tomaPuerto(long int puerto);
-	
+		
 		char* data;
-	    long int puerto = 0;
+	    long int puerto;
 	    pthread_t mithread;
-	    //boost::array<char, 256> buf; // We use a boost::array to hold the received data. 
-
+	   
+	   
+		tcp::acceptor acceptor_;
 
 	private:
 		void start_accept();

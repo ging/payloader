@@ -1,8 +1,20 @@
 #ifndef TCPCONNECTION_H
 #define TCPCONNECTION_H
 
+#include <boost/asio.hpp>
+#include <boost/bind.hpp>
+#include <boost/shared_ptr.hpp>
+#include <boost/enable_shared_from_this.hpp>
+#include <boost/array.hpp>
+ 
+
 using boost::asio::ip::tcp;
 using boost::asio::ip::udp;
+
+#define RTSP_BUFFER_SIZE       10000    // for incoming requests, and outgoing responses
+#define RTSP_PARAM_STRING_MAX  200  
+
+
 #include "logger.h"
 #include "Interfaces.h"
 #include "Streamer.h"
@@ -18,24 +30,32 @@ enum RTSP_CMD_TYPES
     RTSP_UNKNOWN
 };
 
+
 namespace payloader {
-class TcpConnection {
+class TcpConnection : public boost::enable_shared_from_this<TcpConnection>{ 
     DECLARE_LOGGER();
 	public:
-		typedef boost::shared_ptr<TcpConnection> pointer;
-		TcpConnection(boost::asio::io_service &io_service, payloader::Streamer m_Streamer);
+		TcpConnection(boost::asio::io_service &io_service, payloader::Streamer *m_Streamer);
 	    long int getPort();
 	    void registerParent(PortReceiver *parent);
-	    static pointer create(boost::asio::io_service& io_service);
+
+	    typedef boost::shared_ptr<TcpConnection> pointer;
+	    boost::shared_ptr<TcpConnection> create(boost::asio::io_service& io_service, payloader::Streamer *m_Streamer);
 	    void DateHeader();
 	    tcp::socket& socket();
 	    void start();
-
+	    pthread_mutex_t getMutex();
 	    virtual ~TcpConnection();
+
 	   
+	    
+	    boost::array<char, 256> buf; // We use a boost::array to hold the received data. 
+	   	tcp::socket socket_;
+		std::string m_message;
 	    bool connected = false;   
 	 	PortReceiver *myparent;
 		char *data;
+		RTSP_CMD_TYPES C;
 		
 		char buf_Date[200]; 
 		long int puerto = 0;
@@ -62,11 +82,15 @@ class TcpConnection {
 		unsigned       m_ContentLength;      
 		char   response[1024];                     // SDP string size
 
+		payloader::Streamer* m_Streamer;
 
+		void handle_read(const boost::system::error_code& error, size_t /*bytes_transferred*/);
+		RTSP_CMD_TYPES getC();
+		payloader::Streamer* getStreamer();
 		
 	private:
 		void handle_write(const boost::system::error_code& /*error*/, size_t /*bytes_transferred*/);
-		void handle_read(const boost::system::error_code& error, size_t /*bytes_transferred*/);
+		
 		RTSP_CMD_TYPES Handle_RtspRequest(char const * aRequest, unsigned aRequestSize);
 		void Handle_RtspOPTION();
 		void Handle_RtspDESCRIBE();
