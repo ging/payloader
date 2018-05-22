@@ -30,11 +30,18 @@ int Packager::init() {
     return true;
 
 }
+int Packager::init(AVCodecContext *pCodecCtx) {
+    return 0;
+}
 
+
+void Packager::setSink(FrameReceiver* receiver) {
+}
 void Packager::setSink(RtpReceiver* receiver) {
 	sink_ = receiver;
 }
-
+void  Packager::sendPacket(AVPacket *pkt){
+}
 void Packager::receivePacket(AVPacket& packet, AVMediaType type) {
 
     if (type == AVMEDIA_TYPE_VIDEO) {
@@ -54,7 +61,7 @@ void Packager::receivePacket(AVPacket& packet, AVMediaType type) {
         // timestamp_ += 90000 / mediaInfo.videoCodec.frameRate;
         // int64_t dts = av_rescale(lastdts_, 1000000, (long int)video_time_base_);
 
-        ELOG_DEBUG("Sending packet with dts %d",packet.dts);
+        ELOG_DEBUG("Sending packet for RTP with dts %d",packet.dts);
 
 
         do {
@@ -69,7 +76,7 @@ void Packager::receivePacket(AVPacket& packet, AVMediaType type) {
                 rtpHeader.setTimestamp(av_rescale(dts, 90000, 1000));
             }
             rtpHeader.setSSRC(55543);
-            rtpHeader.setPayloadType(100);
+            rtpHeader.setPayloadType(96);
             memcpy(rtpBuffer_, &rtpHeader, rtpHeader.getHeaderLength());
             memcpy(&rtpBuffer_[rtpHeader.getHeaderLength()], outBuff_, outlen);
 

@@ -24,14 +24,19 @@ class Decoder : public PacketReceiver {
 	public:
 	    Decoder();
 	    virtual ~Decoder();
-	    int init(AudioCodecInfo audioInfo, VideoCodecInfo videoInfo);
+	    int init(AVCodecContext *pCodecCtx);
 	    void setSink(FrameReceiver* receiver);
+	    void setSink(RtpReceiver* receiver);
 	    void receivePacket(AVPacket& packet, AVMediaType type);
+		void sendPacket(AVPacket *pkt);
+
 
 	private:
 	   	FrameReceiver* sink_;
+	   //	FrameReceiver* sink_1;
 	   	AVCodec* vDecoder_;
 	   	AVCodecContext* vDecoderContext_;
+	   	AVCodecContext* vDecoderContext_orig;
 	   	AVFrame* vFrame_;
 	   	AVCodec* aDecoder_;
 	   	AVCodecContext* aDecoderContext_;

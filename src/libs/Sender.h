@@ -16,10 +16,13 @@ namespace payloader {
 class Sender : public RtpReceiver {
     DECLARE_LOGGER();
 	public:
-	    Sender(const std::string& url, const std::string& port);
+	    Sender( sockaddr_in RecvAddr, int m_RtpSocket);
 	    virtual ~Sender();
 	    int init();
+		int init(const std::string& url, const std::string& port);
+
 	    void receiveRtpPacket(unsigned char* inBuff, int buffSize);
+	 	void sendPacket(AVPacket pkt, int video_stream_index_,  AVFormatContext *ifmt_ctx, AVFormatContext *ofmt_ctx, int64_t start_time, AVMediaType type);
 
 	private:
 		struct dataPacket{
@@ -39,6 +42,9 @@ class Sender : public RtpReceiver {
 		boost::mutex queueMutex_;
 		std::queue<dataPacket> sendQueue_;
 		bool sending_;
+
+		int RtpSocket;
+		sockaddr_in RecvAdd;
 
 		void sendLoop();
 		int sendData(char* buffer, int len);
