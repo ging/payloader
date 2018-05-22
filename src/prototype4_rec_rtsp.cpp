@@ -20,13 +20,12 @@ if (argc != 2) {
     }
     
 	const char *input_file = argv[1];
-	//const char *output_file = argv[2];
+	const char *output_file = "NULL";
 
-	//payloader::Receiver* receiver = new payloader::Receiver(8854);
-	//payloader::Unpackager* unpackager = new payloader::Unpackager();
+	
 	payloader::Decoder* decoder = new payloader::Decoder();
 	//payloader::Encoder* encoder = new payloader::Encoder();
-	payloader::OutputWriter* writer = new payloader::OutputWriter(NULL);
+	payloader::OutputWriter* writer = new payloader::OutputWriter(output_file);
 	payloader::RtspReader* receiver_rtsp = new payloader::RtspReader(input_file,NULL);
 
 	payloader::VideoCodecInfo mp4Info;

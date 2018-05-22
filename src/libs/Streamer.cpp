@@ -96,15 +96,13 @@ void Streamer::StartStreaming(){
     printf("RecvAddr.sin_port: %d\n", RecvAddr.sin_port);
     printf("RecvAddr.sin_family: %d\n", RecvAddr.sin_family);
 
-    payloader::InputReader* reader = new payloader::InputReader("/home/nacho/Documentos/Proyectos/Arqueopterix/pay_good/payloader/video.avi", NULL);
+    payloader::InputReader* reader = new payloader::InputReader("/home/nacho/Documentos/Proyectos/Arqueopterix/pay_good/payloader/video_2.avi", NULL);
     payloader::Packager* packager = new payloader::Packager();
-    payloader::Sender* sender_rtsp = new payloader::Sender(RecvAddr, m_RtpSocket);
-      // common
+    payloader::Sender* sender = new payloader::Sender(RecvAddr, m_RtpSocket);
+    
+    // common
     packager->init();
-    //receiver->setSink();
-    //receiver->init();
-
-    sender_rtsp->init();
+    sender->init();
 
     // 4a sin transcodificación
     reader->setSink(packager);
@@ -136,7 +134,7 @@ void Streamer::StartStreaming(){
     
 
     // common
-    packager->setSink(sender_rtsp);
+    packager->setSink(sender);
     reader->init();
 
   return;

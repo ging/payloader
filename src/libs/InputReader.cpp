@@ -62,6 +62,11 @@ int InputReader::init(){
 
     ELOG_DEBUG("Video stream index %d, Audio Stream index %d", video_stream_index_, audio_stream_index_);
 
+    //Crear SDP para TcpCpnnection
+   /* char   SDPBuf[1024];
+    av_sdp_create ( &av_context_,1,SDPBuf,1024) ;
+    printf("SDP: %s\n",SDPBuf );*/
+
     this->startReading();
 
     return true;

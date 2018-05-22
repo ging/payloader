@@ -77,6 +77,7 @@ void Packager::receivePacket(AVPacket& packet, AVMediaType type) {
             }
             rtpHeader.setSSRC(55543);
             rtpHeader.setPayloadType(96);
+        
             memcpy(rtpBuffer_, &rtpHeader, rtpHeader.getHeaderLength());
             memcpy(&rtpBuffer_[rtpHeader.getHeaderLength()], outBuff_, outlen);
 

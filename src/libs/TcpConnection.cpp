@@ -131,16 +131,16 @@ void TcpConnection::Handle_RtspDESCRIBE(){
 
    snprintf(SDPBuf,sizeof(SDPBuf),
         "v=0\r\n"
-        "o=- %d 1 IN IP4 %s\r\n"           
+        "o=- 0 0 IN IP4 %s\r\n"           
         "s=Unnamed\r\n"   
-        /*"t=0 0\r\n" */                                           // start / stop - 0 -> unbounded and permanent session
-        "c=IN IP4 0.0.0.0\r\n"
+        "t=0 0\r\n"                                            // start / stop - 0 -> unbounded and permanent session
+        /*"c=IN IP4 0.0.0.0\r\n"*/
         "m=video 0 RTP/AVP 96\r\n"  
+        "b=AS:1561\r\n"
         "a=rtpmap:96 MP4V-ES/90000\r\n"
-        "a=fmtp:96 profile-level-id=1;config=000001B003000001B509000001000000012000C488BA9850584121463F;\r\n"  
-        "a=control:rtsp://138.4.7.72:8554/ej/1/video\r\n",                      // currently we just handle UDP sessions
-        rand(),
-        OBuf);
+        "a=fmtp:96 profile-level-id=1; config=000001B0F5000001B509000001000000012008BC040687FFFF0AAD8B0218CA31000001B25876694430303530\r\n"  
+        "a=control:streamid=0\r\n",                     // currently we just handle UDP sessions
+         OBuf);
 
 /*
     snprintf(SDPBuf,sizeof(SDPBuf),

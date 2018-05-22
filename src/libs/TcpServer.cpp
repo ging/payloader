@@ -93,7 +93,7 @@ void* thread_function01(void* clientSockect) {
             if ((RecvBuf[0] == 'O') || (RecvBuf[0] == 'D') || (RecvBuf[0] == 'S') || (RecvBuf[0] == 'P') || (RecvBuf[0] == 'T'))
             {
                 RTSP_CMD_TYPES C = new_connection->Handle_RtspRequest(RecvBuf,res);
-                if (C == RTSP_PLAY)     StreamingStarted = true; else if (C == RTSP_TEARDOWN) Stop = true; else if (C == RTSP_PAUSE) StreamingStarted = false;
+                if (C == RTSP_PLAY)     StreamingStarted = true; else if (C == RTSP_TEARDOWN) Stop = true; /*else if (C == RTSP_PAUSE) StreamingStarted = false;*/
             };
             break;      
         };

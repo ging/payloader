@@ -51,7 +51,7 @@ class RtspReader_fromDisk {
   		bool Done();
   		long int puerto;
   		
-  		//boost::condition_variable cond_;
+  		
 		char   SDPBuf[1024];
 	    
 
