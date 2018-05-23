@@ -20,9 +20,7 @@ void timer_start(std::function<void(neosmart_event_t)> func, unsigned int interv
         }
     }).detach();
 }
-void do_something(neosmart_event_t event)
-{
-
+void do_something(neosmart_event_t event){
     //std::cout << "I am doing something" << std::endl;//activar el evento 
     SetEvent(event);
 }

@@ -65,7 +65,7 @@ class RtpHeader {
   uint32_t cc :4;
   uint32_t hasextension :1;
   uint32_t padding :1;
-  uint32_t version :128;
+  uint32_t version :2;
   uint32_t payloadtype :7;
   uint32_t marker :1;
   uint32_t seqnum :16;

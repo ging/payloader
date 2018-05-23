@@ -13,7 +13,7 @@
 int main(int argc, const char* argv[]) {
 
 if (argc != 2) {
-        printf("usage: %s output_file\n"
+        printf("usage: %s/ej/1\n"
                "Example...\n"
                "\n", argv[0]);
         exit(1);

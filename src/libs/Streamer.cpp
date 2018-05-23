@@ -86,9 +86,9 @@ u_short Streamer::GetRtcpServerPort()
 };
     
 void Streamer::StartStreaming(){
-    //crear hebra que se encargue del envío
+   
     socklen_t RecvLen = sizeof(RecvAddr);
-     // get client address for UDP transport
+    // get client address for UDP transport
     getpeername(m_Client,(struct sockaddr*)&RecvAddr,&RecvLen);
     RecvAddr.sin_family = AF_INET;
     RecvAddr.sin_port   = htons(m_RtpClientPort);

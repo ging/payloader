@@ -23,6 +23,7 @@ class Sender : public RtpReceiver {
 
 	    void receiveRtpPacket(unsigned char* inBuff, int buffSize);
 	 	void sendPacket(AVPacket pkt, int video_stream_index_,  AVFormatContext *ifmt_ctx, AVFormatContext *ofmt_ctx, int64_t start_time, AVMediaType type);
+		int sendData(char* buffer, int len);
 
 	private:
 		struct dataPacket{
@@ -47,7 +48,6 @@ class Sender : public RtpReceiver {
 		sockaddr_in RecvAdd;
 
 		void sendLoop();
-		int sendData(char* buffer, int len);
 
 
 };
