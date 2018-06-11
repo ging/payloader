@@ -1,22 +1,21 @@
 #include "Sender.h"
 #include <sys/time.h>
-using boost::asio::ip::udp;
+
 
 namespace payloader {
 
 DEFINE_LOGGER(Sender, "Sender");
 
-Sender::Sender(const std::string& url, const std::string& port) {
-    resolver_.reset(new udp::resolver(io_service_));
-    socket_.reset(new udp::socket(io_service_, udp::endpoint(udp::v4(), 0)));
-    query_.reset(new udp::resolver::query(udp::v4(), url.c_str(), port.c_str()));
-    iterator_ = resolver_->resolve(*query_);
+Sender::Sender( sockaddr_in RecvAddr, int m_RtpSocket) : RtpSocket(m_RtpSocket), RecvAdd(RecvAddr) {
+    printf("Iniciando sender\n");
 }
 
 Sender::~Sender() {
     sending_ = false;
     send_Thread_.join();
-    io_service_.stop();
+}
+int Sender::init(const std::string& url, const std::string& port){
+    return 0;
 }
 
 int Sender::init() {
@@ -24,7 +23,8 @@ int Sender::init() {
     send_Thread_ = boost::thread(&Sender::sendLoop, this);
     return true;
 }
-
+void Sender::sendPacket(AVPacket pkt, int video_stream_index_,  AVFormatContext *ifmt_ctx, AVFormatContext *ofmt_ctx, int64_t start_time, AVMediaType type){
+}
 void Sender::receiveRtpPacket(unsigned char* inBuff, int buffSize) {
     boost::mutex::scoped_lock lock(queueMutex_);
     if (sending_ == false)
@@ -54,8 +54,10 @@ void Sender::sendLoop(){
 
 int Sender::sendData(char* buffer, int len) {
     ELOG_DEBUG("Sending socket %d", len);
-
-    socket_->send_to(boost::asio::buffer(buffer, len), *iterator_);
+    boost::asio::mutable_buffer b1 = boost::asio::buffer(buffer, len);
+    std::size_t s1 = boost::asio::buffer_size(b1);
+    unsigned char* RtpBuf2 = boost::asio::buffer_cast<unsigned char*>(b1);
+    sendto(RtpSocket,RtpBuf2,len,0,(sockaddr *) & RecvAdd,sizeof(RecvAdd));// mando el paquete por el socket rtp a la recvaddr
     return len;
 }
 

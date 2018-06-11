@@ -30,15 +30,24 @@ class OutputWriter : public PacketReceiver, public FrameReceiver {
 	    OutputWriter(const std::string& url);
 	    virtual ~OutputWriter();
 	    int init(AudioCodecInfo audioInfo, VideoCodecInfo videoInfo);
+	    int init(AVCodecContext *pCodecCtx);
 	    void receivePacket(AVPacket& packet, AVMediaType type);
 	    void receiveFrame(AVFrame* frame, AVMediaType type);
+	    void setSink(FrameReceiver* receiver);
+		void setSink(RtpReceiver *receiver);
+	    void saveFrame(AVFrame *pFrame, int width, int height, int iFrame);
+	    void sendPacket(AVPacket *pkt);
+
+		//void setSink(PacketReceiver* receiver);
 
 	private:
 		AVFormatContext* av_context_;
 		std::string output_url_;
 		AVStream *video_stream_;
 		AVStream *audio_stream_;
-
+		FrameReceiver* sink_;
+		int i,one;
+		cv::VideoWriter output;
 };
 }	// Namespace payloader
 #endif // OUTPUTWRITER_H_

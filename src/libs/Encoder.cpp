@@ -1,3 +1,8 @@
+/*
+Clase encargada de crear paquetes con frames
+*/
+
+
 #include "Encoder.h"
 #include <sys/time.h>
 
@@ -80,6 +85,10 @@ void Encoder::setSink(PacketReceiver* receiver) {
 	sink_ = receiver;
 }
 
+/*
+Crea un paquete con las tramas
+*/
+
 void Encoder::receiveFrame(AVFrame* frame, AVMediaType type) {
 
 	if (type == AVMEDIA_TYPE_VIDEO) {
@@ -131,7 +140,7 @@ void Encoder::receiveFrame(AVFrame* frame, AVMediaType type) {
 
 		int ret;
 
-	    ret = avcodec_send_frame(aEncoderContext_, frame);
+	    ret = avcodec_send_frame(aEncoderContext_, frame); // es igual que avcodec_encode_video2¿¿ mirar decoder
 	    if (ret < 0) {
 	        ELOG_DEBUG("error sending the frame to the encoder");
 	        return;

@@ -20,6 +20,14 @@ Packager::~Packager() {
     outBuff_ = NULL;
 }
 
+int Packager::init(AVCodecContext *pCodecCtx) {
+    return 0;
+}
+void Packager::setSink(FrameReceiver* receiver) {
+}
+void  Packager::sendPacket(AVPacket *pkt){
+}
+
 int Packager::init() {
 
     videoSeqNum_ = 0;
@@ -32,7 +40,7 @@ int Packager::init() {
 }
 
 void Packager::setSink(RtpReceiver* receiver) {
-	sink_ = receiver;
+    sink_ = receiver;
 }
 
 void Packager::receivePacket(AVPacket& packet, AVMediaType type) {
@@ -69,7 +77,7 @@ void Packager::receivePacket(AVPacket& packet, AVMediaType type) {
                 rtpHeader.setTimestamp(av_rescale(dts, 90000, 1000));
             }
             rtpHeader.setSSRC(55543);
-            rtpHeader.setPayloadType(100);
+            rtpHeader.setPayloadType(96);
             memcpy(rtpBuffer_, &rtpHeader, rtpHeader.getHeaderLength());
             memcpy(&rtpBuffer_[rtpHeader.getHeaderLength()], outBuff_, outlen);
 
@@ -94,4 +102,4 @@ void Packager::receivePacket(AVPacket& packet, AVMediaType type) {
 
 
 
-}	// Namespace payloader
+}   // Namespace payloader
