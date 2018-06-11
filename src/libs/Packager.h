@@ -28,6 +28,11 @@ class Packager : public PacketReceiver {
 	    int init();
 	    void setSink(RtpReceiver* receiver);
 	    void receivePacket(AVPacket& packet, AVMediaType type);
+	  
+	 int init(AVCodecContext *pCodecCtx);
+	 void setSink(FrameReceiver *receiver);
+
+	 void sendPacket(AVPacket *pkt);
 
 	private:
 		RtpReceiver* sink_;
